@@ -191,17 +191,6 @@ const parseDeliveryEtaMinutes = (etaText) => {
 const formatCurrencyValue = (value) =>
   typeof value === 'number' && Number.isFinite(value) ? value.toFixed(2) : null
 
-const STORE_ACCENT_CLASSES = ['cart-accent-blue', 'cart-accent-green', 'cart-accent-orange', 'cart-accent-purple']
-
-const getStoreAccentClass = (storeId) => {
-  if (!storeId) return STORE_ACCENT_CLASSES[0]
-  const charSum = storeId
-    .split('')
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0)
-  const index = charSum % STORE_ACCENT_CLASSES.length
-  return STORE_ACCENT_CLASSES[index]
-}
-
 const aggregateProducts = (stores, inventoryLookup) => {
   const catalog = new Map()
 
@@ -597,6 +586,8 @@ const Cart = ({ items, onUpdateQuantity, onRemove, total }) => {
       const group = {
         storeId: item.storeId,
         storeName: item.storeName,
+        deliveryEta: item.deliveryEta,
+        address: item.storeAddress,
         items: [],
         subtotal: 0,
       }
@@ -606,7 +597,13 @@ const Cart = ({ items, onUpdateQuantity, onRemove, total }) => {
 
     const group = storeMap.get(item.storeId)
     group.items.push(item)
-    group.subtotal += item.price * item.quantity
+    group.subtotal += (item.price ?? 0) * item.quantity
+    if (!group.deliveryEta && item.deliveryEta) {
+      group.deliveryEta = item.deliveryEta
+    }
+    if (!group.address && item.storeAddress) {
+      group.address = item.storeAddress
+    }
   })
 
   return (
@@ -623,68 +620,86 @@ const Cart = ({ items, onUpdateQuantity, onRemove, total }) => {
           const storeTotal = formatCurrencyValue(store.subtotal)
           return (
             <li key={store.storeId} className="cart-store">
-              <div className={`cart-store__header ${getStoreAccentClass(store.storeId)}`}>
-                <div className="cart-store__title">
-                  <h3>{store.storeName}</h3>
-                  <span className="cart-store__meta">
-                    {store.items.length} item{store.items.length === 1 ? '' : 's'}
-                    {storeTotal ? ` · $${storeTotal}` : ''}
-                  </span>
+              <article className="cart-store__card">
+                <div className="cart-store__header">
+                  <div className="cart-store__title">
+                    <h3>{store.storeName}</h3>
+                    <span className="cart-store__meta">
+                      {store.items.length} item{store.items.length === 1 ? '' : 's'}
+                      {storeTotal ? ` · $${storeTotal}` : ''}
+                    </span>
+                  </div>
+                  {(store.deliveryEta || store.address) && (
+                    <div className="cart-store__summary">
+                      {store.deliveryEta ? (
+                        <span className="cart-store__eta">ETA {store.deliveryEta}</span>
+                      ) : null}
+                      {store.address ? <span className="cart-store__address">{store.address}</span> : null}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <ul className="cart-store__items">
-                {store.items.map((item) => {
-                  const formattedPrice = formatCurrencyValue(item.price)
-                  const formattedSubtotal = formatCurrencyValue(item.price * item.quantity)
+                <ul className="cart-store__items">
+                  {store.items.map((item) => {
+                    const formattedPrice = formatCurrencyValue(item.price)
+                    const lineSubtotal = (item.price ?? 0) * item.quantity
+                    const formattedSubtotal = formatCurrencyValue(lineSubtotal)
 
-                  return (
-                    <li key={`${item.sku}-${item.storeId}`} className="cart-item">
-                      <div className={`cart-line ${getStoreAccentClass(store.storeId)}`}>
-                        <div className="cart-line__details">
-                          <div className="cart-line__title">
-                            <strong>{item.name}</strong>
-                            <span className="cart-line__price">
-                              {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
-                            </span>
+                    return (
+                      <li key={`${item.sku}-${item.storeId}`} className="cart-item">
+                        <div className="cart-line">
+                          <div className="cart-line__details">
+                            <div className="cart-line__title">
+                              <strong>{item.name}</strong>
+                              <span className="cart-line__price">
+                                {formattedPrice ? (
+                                  <>
+                                    ${formattedPrice}
+                                    {item.unit ? <span className="cart-line__unit"> / {item.unit}</span> : null}
+                                  </>
+                                ) : (
+                                  'Price unavailable'
+                                )}
+                              </span>
+                            </div>
+                            <div className="cart-line__meta">
+                              <span className="badge badge--subtle">SKU {item.sku}</span>
+                              {typeof item.quantityAvailable === 'number' ? (
+                                <span className="cart-line__stock">{item.quantityAvailable} available</span>
+                              ) : null}
+                            </div>
                           </div>
-                          <div className="cart-line__meta">
-                            <span className="badge badge--subtle">SKU {item.sku}</span>
-                            {item.quantityAvailable != null ? (
-                              <span className="cart-line__stock">{item.quantityAvailable} in stock</span>
+                          <div className="cart-line__actions">
+                            <div className="cart-line__qty">
+                              <label htmlFor={`quantity-${item.sku}-${item.storeId}`}>Qty</label>
+                              <input
+                                id={`quantity-${item.sku}-${item.storeId}`}
+                                type="number"
+                                min="1"
+                                max={item.quantityAvailable}
+                                value={item.quantity}
+                                onChange={(event) =>
+                                  onUpdateQuantity(item.sku, item.storeId, Number(event.target.value))
+                                }
+                              />
+                            </div>
+                            {formattedSubtotal ? (
+                              <span className="cart-line__subtotal">Subtotal ${formattedSubtotal}</span>
                             ) : null}
+                            <button
+                              type="button"
+                              className="link cart-line__remove"
+                              onClick={() => onRemove(item.sku, item.storeId)}
+                              aria-label={`Remove ${item.name} from ${store.storeName}`}
+                            >
+                              Remove
+                            </button>
                           </div>
                         </div>
-                        <div className="cart-line__actions">
-                          <div className="cart-line__qty">
-                            <label htmlFor={`quantity-${item.sku}-${item.storeId}`}>Qty</label>
-                            <input
-                              id={`quantity-${item.sku}-${item.storeId}`}
-                              type="number"
-                              min="1"
-                              max={item.quantityAvailable}
-                              value={item.quantity}
-                              onChange={(event) =>
-                                onUpdateQuantity(item.sku, item.storeId, Number(event.target.value))
-                              }
-                            />
-                          </div>
-                          {formattedSubtotal ? (
-                            <span className="cart-line__subtotal">${formattedSubtotal} total</span>
-                          ) : null}
-                          <button
-                            type="button"
-                            className="link cart-line__remove"
-                            onClick={() => onRemove(item.sku, item.storeId)}
-                            aria-label={`Remove ${item.name} from ${store.storeName}`}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </article>
             </li>
           )
         })}
@@ -819,7 +834,7 @@ function App() {
   }, [fetchStores, fetchProducts])
 
   const cartTotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    () => cart.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0),
     [cart],
   )
 
@@ -977,7 +992,9 @@ function App() {
       if (existingIndex >= 0) {
         const next = [...previous]
         const existing = next[existingIndex]
-        const nextQuantity = Math.min(existing.quantity + 1, provider.quantityAvailable)
+        const maxAvailable =
+          typeof provider.quantityAvailable === 'number' ? provider.quantityAvailable : Infinity
+        const nextQuantity = Math.min(existing.quantity + 1, maxAvailable)
         next[existingIndex] = { ...existing, quantity: nextQuantity }
         return next
       }
@@ -992,6 +1009,9 @@ function App() {
           price: provider.price,
           quantity: 1,
           quantityAvailable: provider.quantityAvailable,
+          unit: product.unit,
+          deliveryEta: provider.deliveryEta,
+          storeAddress: provider.address,
         },
       ]
     })
@@ -1005,7 +1025,9 @@ function App() {
       const next = previous
         .map((item) => {
           if (item.sku !== sku || item.storeId !== storeId) return item
-          const clamped = Math.min(Math.max(quantity, 1), item.quantityAvailable)
+          const maxAvailable =
+            typeof item.quantityAvailable === 'number' ? item.quantityAvailable : Infinity
+          const clamped = Math.min(Math.max(quantity, 1), maxAvailable)
           return { ...item, quantity: clamped }
         })
         .filter((item) => item.quantity > 0)
