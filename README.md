@@ -93,7 +93,8 @@ By default the frontend assumes the API is reachable via the same origin at `/ap
 docker compose up --build
 ```
 
-This command builds the API and frontend images, publishes port 4000 for the backend and 8080 for the frontend, and injects the correct `VITE_API_BASE_URL` so the UI talks to the local API.
+This command builds the API and frontend images, publishes only port 8080 for the UI, and injects a `VITE_API_BASE_URL` that targets the backend over Docker's internal network at `http://api:4000`.
+If you need direct host access to the API for debugging, add a temporary port mapping under the `api` service.
 
 ## Project structure
 
