@@ -386,11 +386,12 @@ select:focus {
 .inventory--with-sidebar {
   display: grid;
   gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .inventory--with-sidebar {
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
     align-items: start;
   }
 }
