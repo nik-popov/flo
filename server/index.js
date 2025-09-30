@@ -1,11 +1,18 @@
 const express = require('express');
 const cors = require('cors');
-const { randomUUID } = require('crypto');
 
 const { stores, getStoreById } = require('./src/data/stores');
 const { getStoresNearby, getInventoryForStore } = require('./src/services/storeService');
 const { getProductsCatalog } = require('./src/services/productService');
 const { validateOrderPayload } = require('./src/services/validation');
+const {
+  createOrder,
+  orders,
+  getOrders,
+  getOrderById,
+  updateOrderStatus,
+  ORDER_STATUS_SEQUENCE,
+} = require('./src/services/orderService');
 
 const PORT = process.env.PORT || 4000;
 
@@ -71,8 +78,6 @@ app.get('/api/stores/:storeId/inventory', (req, res) => {
   return res.json({ store, inventory });
 });
 
-const orders = [];
-
 app.post('/api/orders', (req, res) => {
   const { isValid, errors } = validateOrderPayload(req.body);
 
@@ -80,15 +85,55 @@ app.post('/api/orders', (req, res) => {
     return res.status(400).json({ error: 'Invalid payload', details: errors });
   }
 
-  const order = {
-    id: randomUUID(),
-    placedAt: new Date().toISOString(),
-    ...req.body,
-  };
-
-  orders.push(order);
-
+  const order = createOrder(req.body);
   return res.status(201).json({ order });
+});
+
+app.get('/api/orders', (req, res) => {
+  const { contact } = req.query;
+  const filters = {};
+  if (typeof contact === 'string' && contact.trim()) {
+    filters.contact = contact;
+  }
+
+  const results = getOrders(filters);
+  return res.json({ orders: results });
+});
+
+app.get('/api/orders/:orderId', (req, res) => {
+  const { orderId } = req.params;
+  const order = getOrderById(orderId);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  return res.json({ order });
+});
+
+app.patch('/api/orders/:orderId/status', (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body || {};
+
+  const order = getOrderById(orderId);
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  if (typeof status !== 'string' || !status.trim()) {
+    return res.status(400).json({ error: 'Status code required' });
+  }
+
+  const normalizedStatus = status.trim();
+  const isValidStatus = ORDER_STATUS_SEQUENCE.some((step) => step.code === normalizedStatus);
+  if (!isValidStatus) {
+    return res
+      .status(400)
+      .json({ error: 'Invalid status code', allowed: ORDER_STATUS_SEQUENCE.map((step) => step.code) });
+  }
+
+  const updatedOrder = updateOrderStatus(orderId, normalizedStatus);
+  return res.json({ order: updatedOrder });
 });
 
 if (require.main === module) {

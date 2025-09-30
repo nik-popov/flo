@@ -9,12 +9,55 @@ const fetchJson = async (path, options = {}) => {
     ...options,
   })
 
+  const contentType = response.headers?.get?.('content-type') ?? ''
+  const isJson = contentType.includes('application/json')
+
   if (!response.ok) {
-    const message = `Request failed with status ${response.status}`
-    throw new Error(message)
+    let errorPayload
+
+    if (isJson) {
+      try {
+        errorPayload = await response.json()
+      } catch (parseError) {
+        console.warn('Unable to parse error response as JSON', parseError)
+      }
+    } else {
+      try {
+        errorPayload = await response.text()
+      } catch (textError) {
+        console.warn('Unable to read error response as text', textError)
+      }
+    }
+
+    let message = `Request failed with status ${response.status}`
+    let details
+
+    if (errorPayload && typeof errorPayload === 'object') {
+      if (typeof errorPayload.error === 'string') {
+        message = errorPayload.error
+      } else if (typeof errorPayload.message === 'string') {
+        message = errorPayload.message
+      }
+      if (Array.isArray(errorPayload.details) && errorPayload.details.length) {
+        details = errorPayload.details
+      }
+    } else if (typeof errorPayload === 'string' && errorPayload.trim()) {
+      message = errorPayload.trim()
+    }
+
+    const error = new Error(message)
+    error.status = response.status
+    if (details) {
+      error.details = details
+    }
+    throw error
   }
 
-  return response.json()
+  if (isJson) {
+    return response.json()
+  }
+
+  return response.text()
 }
 
 const FALLBACK_STORES = [
@@ -190,6 +233,16 @@ const parseDeliveryEtaMinutes = (etaText) => {
 
 const formatCurrencyValue = (value) =>
   typeof value === 'number' && Number.isFinite(value) ? value.toFixed(2) : null
+
+const formatDateTime = (value) => {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
 
 const aggregateProducts = (stores, inventoryLookup) => {
   const catalog = new Map()
@@ -719,6 +772,218 @@ const StatusBanner = ({ status }) => {
   return <div className={`status-banner status-banner--${status.type}`}>{status.message}</div>
 }
 
+const OrderStatusTimeline = ({ statusFlow = [], currentStatus }) => {
+  if (!Array.isArray(statusFlow) || !statusFlow.length) {
+    return <p className="muted">Status updates will appear here.</p>
+  }
+
+  const currentCode = currentStatus?.code
+
+  return (
+    <ol className="status-timeline">
+      {statusFlow.map((step) => {
+        const isActive = step.code === currentCode
+        const isCompleted = Boolean(step.timestamp) && !isActive
+        const className = [
+          'status-step',
+          isActive ? 'status-step--active' : '',
+          isCompleted ? 'status-step--completed' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+
+        return (
+          <li key={step.code} className={className}>
+            <span className="status-step__marker" aria-hidden="true" />
+            <div className="status-step__content">
+              <span className="status-step__label">{step.label}</span>
+              {step.timestamp ? (
+                <span className="status-step__timestamp">{formatDateTime(step.timestamp)}</span>
+              ) : (
+                <span className="status-step__timestamp muted">Pending</span>
+              )}
+            </div>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+const OrderHistoryPanel = ({
+  contactInput,
+  onContactInputChange,
+  onSubmitLookup,
+  trackedContact,
+  orders,
+  loading,
+  error,
+  selectedOrder,
+  onSelectOrder,
+  onRefresh,
+  onAdvanceStatus,
+  advancingOrderId,
+}) => {
+  const hasOrders = Array.isArray(orders) && orders.length > 0
+  const nextStatus = selectedOrder?.statusFlow?.find((step) => !step.timestamp) ?? null
+
+  return (
+    <section className="order-tracker">
+      <header className="order-tracker__header">
+        <div>
+          <h2>Order history</h2>
+          <p className="muted">Track the latest updates from recently placed orders.</p>
+        </div>
+        <div className="order-tracker__header-actions">
+          <button
+            type="button"
+            className="button-ghost"
+            onClick={onRefresh}
+            disabled={!trackedContact || loading}
+          >
+            Refresh
+          </button>
+        </div>
+      </header>
+
+      <form className="order-tracker__lookup" onSubmit={onSubmitLookup}>
+        <label className="filter-label" htmlFor="order-tracker-contact">
+          Track by contact
+        </label>
+        <div className="order-tracker__lookup-row">
+          <input
+            id="order-tracker-contact"
+            type="search"
+            placeholder="Email or phone used at checkout"
+            value={contactInput}
+            onChange={(event) => onContactInputChange(event.target.value)}
+          />
+          <button type="submit" className="secondary" disabled={!contactInput.trim() || loading}>
+            Track orders
+          </button>
+        </div>
+        {trackedContact ? (
+          <span className="order-tracker__status-info">
+            Showing updates for <strong>{trackedContact}</strong>
+          </span>
+        ) : null}
+      </form>
+
+      {error ? <p className="inline-alert">{error}</p> : null}
+      {loading ? <p className="muted">Loading order history…</p> : null}
+
+      {hasOrders ? (
+        <div className="order-history">
+          <ul className="order-history__list">
+            {orders.map((order) => {
+              const summary = order.summary || {}
+              const currentLabel = order.currentStatus?.label || 'In progress'
+              const placedDisplay = formatDateTime(order.placedAt)
+              const totalDisplay = formatCurrencyValue(summary.total) ?? '0.00'
+              const isActive = selectedOrder?.id === order.id
+
+              return (
+                <li key={order.id}>
+                  <button
+                    type="button"
+                    className={`order-card-trigger${isActive ? ' order-card-trigger--active' : ''}`}
+                    onClick={() => onSelectOrder(order.id)}
+                  >
+                    <div className="order-card-trigger__top">
+                      <span className="order-card-trigger__headline">
+                        {summary.itemCount || 0} item{summary.itemCount === 1 ? '' : 's'} ·{' '}
+                        {summary.storeCount || 0} provider{summary.storeCount === 1 ? '' : 's'}
+                      </span>
+                      <span className="order-card-trigger__total">${totalDisplay}</span>
+                    </div>
+                    <div className="order-card-trigger__meta">
+                      <span className="badge badge--subtle">{currentLabel}</span>
+                      {placedDisplay ? <span>{placedDisplay}</span> : null}
+                      <span className="muted">#{order.id.slice(0, 8).toUpperCase()}</span>
+                    </div>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+
+          {selectedOrder ? (
+            <div className="order-detail" aria-live="polite">
+              <div className="order-detail__header">
+                <div className="order-detail__meta">
+                  <h3>Order {selectedOrder.id.slice(0, 8).toUpperCase()}</h3>
+                  <span>
+                    Placed {formatDateTime(selectedOrder.placedAt) || '—'} ·{' '}
+                    {selectedOrder.summary?.itemCount || 0} item
+                    {selectedOrder.summary?.itemCount === 1 ? '' : 's'} across{' '}
+                    {selectedOrder.summary?.storeCount || 0}{' '}
+                    {selectedOrder.summary?.storeCount === 1 ? 'provider' : 'providers'}
+                  </span>
+                </div>
+                <div className="order-detail__actions">
+                  <span className="badge badge--accent">
+                    {selectedOrder.currentStatus?.label || 'In progress'}
+                  </span>
+                  {nextStatus?.code ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => onAdvanceStatus(selectedOrder.id, nextStatus.code)}
+                      disabled={advancingOrderId === selectedOrder.id}
+                    >
+                      {advancingOrderId === selectedOrder.id
+                        ? 'Updating…'
+                        : `Advance to ${nextStatus.label}`}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="order-detail__timeline">
+                <OrderStatusTimeline
+                  statusFlow={selectedOrder.statusFlow}
+                  currentStatus={selectedOrder.currentStatus}
+                />
+              </div>
+
+              <div className="order-detail__stores">
+                {selectedOrder.storeOrders?.map((storeOrder) => (
+                  <div key={storeOrder.storeId} className="order-detail__store">
+                    <div className="order-detail__store-header">
+                      <strong>{storeOrder.storeName || 'Provider'}</strong>
+                      <span className="muted">{storeOrder.deliveryEta || 'ETA unavailable'}</span>
+                    </div>
+                    <ul className="order-detail__items">
+                      {storeOrder.items?.map((item) => (
+                        <li key={`${storeOrder.storeId}-${item.sku}`}>
+                          <span>
+                            {item.quantity}× {item.name || item.sku}
+                          </span>
+                          <span>${formatCurrencyValue(item.lineTotal) ?? '0.00'}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="order-detail__subtotal">
+                      <span>Subtotal</span>
+                      <span>${formatCurrencyValue(storeOrder.subtotal) ?? '0.00'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : !loading && trackedContact ? (
+        <p className="muted">No orders found yet. We’ll post updates here once things change.</p>
+      ) : !loading ? (
+        <p className="muted">
+          Enter the contact details used during checkout to follow your order status.
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
 function App() {
   const DEFAULT_ZIP = '10001'
   const DEFAULT_RADIUS = 10
@@ -745,6 +1010,98 @@ function App() {
   const [orderStatus, setOrderStatus] = useState(null)
   const [orderSubmitting, setOrderSubmitting] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
+  const [orderHistory, setOrderHistory] = useState([])
+  const [orderHistoryLoading, setOrderHistoryLoading] = useState(false)
+  const [orderHistoryError, setOrderHistoryError] = useState('')
+  const [orderLookupContact, setOrderLookupContact] = useState('')
+  const [trackedContact, setTrackedContact] = useState('')
+  const [selectedOrderId, setSelectedOrderId] = useState('')
+  const [orderUpdatingId, setOrderUpdatingId] = useState('')
+
+  const loadOrderHistory = useCallback(
+    async (contactValue) => {
+      const trimmedContact = typeof contactValue === 'string' ? contactValue.trim() : ''
+      if (!trimmedContact) {
+        setTrackedContact('')
+        setOrderHistory([])
+        setSelectedOrderId('')
+        setOrderHistoryError('')
+        setOrderHistoryLoading(false)
+        return
+      }
+
+      setTrackedContact(trimmedContact)
+      setOrderHistoryLoading(true)
+      setOrderHistoryError('')
+
+      try {
+        const data = await fetchJson(`/api/orders?contact=${encodeURIComponent(trimmedContact)}`)
+        const ordersResponse = Array.isArray(data.orders) ? data.orders : []
+        setOrderHistory(ordersResponse)
+        if (ordersResponse.length > 0) {
+          setSelectedOrderId((previous) => {
+            if (previous && ordersResponse.some((order) => order.id === previous)) {
+              return previous
+            }
+            return ordersResponse[0].id
+          })
+        } else {
+          setSelectedOrderId('')
+        }
+      } catch (error) {
+        setOrderHistoryError(error.message)
+      } finally {
+        setOrderHistoryLoading(false)
+      }
+    },
+    [],
+  )
+
+  const handleTrackOrdersSubmit = useCallback(
+    (event) => {
+      event.preventDefault()
+      loadOrderHistory(orderLookupContact)
+    },
+    [orderLookupContact, loadOrderHistory],
+  )
+
+  const handleRefreshOrderHistory = useCallback(() => {
+    if (trackedContact) {
+      loadOrderHistory(trackedContact)
+    }
+  }, [trackedContact, loadOrderHistory])
+
+  const handleSelectOrder = useCallback((orderId) => {
+    setSelectedOrderId(orderId)
+  }, [])
+
+  const handleAdvanceOrderStatus = useCallback(
+    async (orderId, statusCode) => {
+      if (!orderId || !statusCode) return
+      setOrderHistoryError('')
+      setOrderUpdatingId(orderId)
+      try {
+        await fetchJson(`/api/orders/${orderId}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: statusCode }),
+        })
+        if (trackedContact) {
+          await loadOrderHistory(trackedContact)
+        }
+      } catch (error) {
+        setOrderHistoryError(error.message)
+      } finally {
+        setOrderUpdatingId('')
+      }
+    },
+    [loadOrderHistory, trackedContact],
+  )
+
+  useEffect(() => {
+    if (!orderLookupContact && customerContact) {
+      setOrderLookupContact(customerContact)
+    }
+  }, [customerContact, orderLookupContact])
 
   const filterFallbackStores = useCallback(() => {
     const location = coords ? { lat: coords.lat, lng: coords.lng } : null
@@ -1104,14 +1461,78 @@ function App() {
         method: 'POST',
         body: JSON.stringify(payload),
       })
+      const order = response.order ?? null
+      const summary = order?.summary ?? null
+      const summaryParts = []
+
+      if (summary) {
+        if (typeof summary.itemCount === 'number' && summary.itemCount > 0) {
+          summaryParts.push(`${summary.itemCount} item${summary.itemCount === 1 ? '' : 's'}`)
+        }
+        if (typeof summary.storeCount === 'number' && summary.storeCount > 0) {
+          summaryParts.push(
+            `across ${summary.storeCount} provider${summary.storeCount === 1 ? '' : 's'}`,
+          )
+        }
+        const formattedTotal = formatCurrencyValue(summary.total)
+        if (formattedTotal) {
+          summaryParts.push(`$${formattedTotal}`)
+        }
+      }
+
+      let successMessage = 'Order placed!'
+      if (summaryParts.length) {
+        successMessage += ` ${summaryParts.join(' · ')}.`
+      }
+
+      if (order?.id) {
+        successMessage += ` Confirmation #${order.id.slice(0, 8).toUpperCase()}.`
+      }
+
+      const contactForHistory = payload.customerDetails.contact
+      if (order?.id) {
+        setSelectedOrderId(order.id)
+      }
+      if (contactForHistory) {
+        setOrderLookupContact(contactForHistory)
+        loadOrderHistory(contactForHistory)
+      }
+
+      const statusFlowLabels = Array.isArray(order?.statusFlow)
+        ? order.statusFlow
+            .map((step) => {
+              if (step && typeof step === 'object' && typeof step.label === 'string') {
+                return step.label
+              }
+              if (typeof step === 'string') {
+                return step
+              }
+              return null
+            })
+            .filter(Boolean)
+        : []
+
+      const currentStatusLabel =
+        typeof order?.currentStatus?.label === 'string'
+          ? order.currentStatus.label
+          : statusFlowLabels[0] || null
+
+      if (currentStatusLabel) {
+        successMessage += ` Status: ${currentStatusLabel}.`
+      }
+
       setOrderStatus({
         type: 'success',
-        message: `Order placed! Confirmation #${response.order.id.slice(0, 8).toUpperCase()}`,
+        message: successMessage.trim(),
       })
       setCart([])
       setCartOpen(false)
     } catch (error) {
-      setOrderStatus({ type: 'error', message: error.message })
+      const detailMessage =
+        Array.isArray(error.details) && error.details.length
+          ? `: ${error.details.join('; ')}`
+          : ''
+      setOrderStatus({ type: 'error', message: `${error.message}${detailMessage}` })
     } finally {
       setOrderSubmitting(false)
     }
@@ -1125,6 +1546,10 @@ function App() {
   const productStatValue = productsLoading ? '—' : filteredProducts.length
   const cartTotalDisplay = cartItemCount ? `$${cartTotal.toFixed(2)}` : '$0.00'
   const cartItemsHint = cartItemCount ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'}` : 'Cart empty'
+  const selectedOrder = useMemo(
+    () => orderHistory.find((order) => order.id === selectedOrderId) || null,
+    [orderHistory, selectedOrderId],
+  )
 
   return (
     <div className="app-shell">
@@ -1195,6 +1620,20 @@ function App() {
             onSelectedStoreChange={setSelectedStoreId}
           />
         </section>
+        <OrderHistoryPanel
+          contactInput={orderLookupContact}
+          onContactInputChange={setOrderLookupContact}
+          onSubmitLookup={handleTrackOrdersSubmit}
+          trackedContact={trackedContact}
+          orders={orderHistory}
+          loading={orderHistoryLoading}
+          error={orderHistoryError}
+          selectedOrder={selectedOrder}
+          onSelectOrder={handleSelectOrder}
+          onRefresh={handleRefreshOrderHistory}
+          onAdvanceStatus={handleAdvanceOrderStatus}
+          advancingOrderId={orderUpdatingId}
+        />
       </div>
 
       <CartToggle

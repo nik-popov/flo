@@ -2,11 +2,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from './App.jsx'
 
-const createFetchResponse = (body) =>
-  Promise.resolve({
+const createFetchResponse = (body, overrides = {}) => {
+  const baseResponse = {
     ok: true,
+    headers: {
+      get: (headerName) =>
+        headerName && headerName.toLowerCase() === 'content-type' ? 'application/json' : null,
+    },
     json: () => Promise.resolve(body),
+    text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
+  }
+
+  return Promise.resolve({
+    ...baseResponse,
+    ...overrides,
+    headers: overrides.headers || baseResponse.headers,
   })
+}
 
 describe('App', () => {
   beforeEach(() => {
@@ -194,5 +206,178 @@ describe('App', () => {
         }),
       ).toBeInTheDocument()
     })
+  })
+
+  it('submits the cart and displays order confirmation details', async () => {
+    fetch
+      .mockImplementationOnce(() =>
+        createFetchResponse({
+          stores: [
+            {
+              id: 'store-101',
+              name: 'Sample Store',
+              address: '123 Elm Street',
+              hours: '8-5',
+              distanceKm: 1.2,
+              deliveryEta: '45-60 min',
+            },
+          ],
+        }),
+      )
+      .mockImplementationOnce(() =>
+        createFetchResponse({
+          products: [
+            {
+              sku: 'APL-001',
+              name: 'Honeycrisp Apples',
+              description: 'Fresh apples',
+              category: 'Produce',
+              storeCount: 1,
+              lowestPrice: 2.49,
+              highestPrice: 2.49,
+              stores: [
+                {
+                  storeId: 'store-101',
+                  storeName: 'Sample Store',
+                  price: 2.49,
+                  quantityAvailable: 20,
+                  deliveryEta: '45-60 min',
+                },
+              ],
+            },
+          ],
+        }),
+      )
+      .mockImplementationOnce(() =>
+        createFetchResponse({
+          order: {
+            id: 'order-12345678',
+            summary: {
+              itemCount: 1,
+              storeCount: 1,
+              total: 2.49,
+            },
+            currentStatus: {
+              code: 'placed',
+              label: 'Order placed',
+            },
+            statusFlow: [
+              { code: 'placed', label: 'Order placed' },
+              { code: 'confirmed', label: 'Confirmed' },
+              { code: 'ready_for_pickup', label: 'Ready for pickup' },
+            ],
+            storeOrders: [
+              {
+                storeId: 'store-101',
+                storeName: 'Sample Store',
+                subtotal: 2.49,
+                items: [
+                  {
+                    sku: 'APL-001',
+                    quantity: 1,
+                    price: 2.49,
+                    lineTotal: 2.49,
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      )
+      .mockImplementationOnce(() =>
+        createFetchResponse({
+          orders: [
+            {
+              id: 'order-12345678',
+              placedAt: '2025-09-30T12:00:00.000Z',
+              summary: {
+                itemCount: 1,
+                storeCount: 1,
+                total: 2.49,
+              },
+              currentStatus: {
+                code: 'placed',
+                label: 'Order placed',
+              },
+              statusFlow: [
+                { code: 'placed', label: 'Order placed', timestamp: '2025-09-30T12:00:00.000Z' },
+                { code: 'confirmed', label: 'Confirmed' },
+                { code: 'ready_for_pickup', label: 'Ready for pickup' },
+              ],
+              storeOrders: [
+                {
+                  storeId: 'store-101',
+                  storeName: 'Sample Store',
+                  deliveryEta: '45-60 min',
+                  subtotal: 2.49,
+                  items: [
+                    {
+                      sku: 'APL-001',
+                      quantity: 1,
+                      name: 'Honeycrisp Apples',
+                      lineTotal: 2.49,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      )
+
+    render(<App />)
+
+    const addToCartButton = await screen.findByRole('button', {
+      name: /add honeycrisp apples from sample store to cart/i,
+    })
+    fireEvent.click(addToCartButton)
+
+    const nameInput = await screen.findByLabelText(/your name/i)
+    fireEvent.change(nameInput, { target: { value: 'Alex Shopper' } })
+
+    const contactInput = screen.getByLabelText(/contact/i)
+    fireEvent.change(contactInput, { target: { value: 'alex@example.com' } })
+
+    const placeOrderButton = screen.getByRole('button', { name: /place order/i })
+    fireEvent.click(placeOrderButton)
+
+    const statusBanner = await screen.findByText(/Order placed!/i)
+    expect(statusBanner).toHaveTextContent(/\$2\.49/i)
+    expect(statusBanner).toHaveTextContent(/confirmation #ORDER-12/i)
+  expect(statusBanner).toHaveTextContent(/Status: Order placed\./i)
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(4))
+    const orderCall = fetch.mock.calls[2]
+    expect(orderCall[0]).toBe('/api/orders')
+    expect(orderCall[1].method).toBe('POST')
+
+    const parsedBody = JSON.parse(orderCall[1].body)
+    expect(parsedBody.storeOrders).toEqual([
+      {
+        storeId: 'store-101',
+        items: [
+          {
+            sku: 'APL-001',
+            quantity: 1,
+          },
+        ],
+      },
+    ])
+    expect(parsedBody.customerDetails).toEqual({
+      name: 'Alex Shopper',
+      contact: 'alex@example.com',
+    })
+
+    const historyCall = fetch.mock.calls[3]
+    expect(historyCall[0]).toBe('/api/orders?contact=alex%40example.com')
+    expect(historyCall[1]?.method ?? 'GET').toBe('GET')
+
+    expect(await screen.findByText(/Showing updates for/i)).toHaveTextContent(
+      /alex@example.com/i,
+    )
+  expect(await screen.findByText(/Order ORDER-12/i)).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: /Advance to Confirmed/i }),
+    ).toBeInTheDocument()
   })
 })
