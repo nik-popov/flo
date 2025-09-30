@@ -75,8 +75,8 @@ describe('App', () => {
 
     render(<App />)
 
-    const [storeButton] = await screen.findAllByRole('button', { name: /sample store/i })
-    expect(storeButton).toBeInTheDocument()
+  const locationInput = await screen.findByLabelText(/search by city, zip, or store name/i)
+  expect(locationInput).toHaveValue('10001')
 
     expect(await screen.findByText(/Honeycrisp Apples/i)).toBeInTheDocument()
     expect(screen.getByText(/2 provider/i)).toBeInTheDocument()
@@ -96,8 +96,8 @@ describe('App', () => {
     expect(quantityInputs).toHaveLength(2)
 
     expect(screen.getByText(/Total: \$5\.28/)).toBeInTheDocument()
-    expect(screen.getByText(/Sample Store/)).toBeInTheDocument()
-    expect(screen.getByText(/Uptown Market/)).toBeInTheDocument()
+  expect(screen.getAllByText(/Sample Store/)).not.toHaveLength(0)
+  expect(screen.getAllByText(/Uptown Market/)).not.toHaveLength(0)
     expect(screen.getByText(/Cart includes items from Sample Store, Uptown Market./i)).toBeInTheDocument()
   })
 })

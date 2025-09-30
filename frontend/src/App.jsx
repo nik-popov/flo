@@ -228,174 +228,11 @@ const aggregateProducts = (stores, inventoryLookup) => {
   })
 }
 
-const StoreList = ({ stores, selectedId, loading, error, onSelect, filters }) => {
-  if (loading) {
-    return <div className="panel-body">Loading nearby stores…</div>
-  }
-
-  if (!stores.length) {
-    return (
-      <div className="panel-body">
-        <p className="muted">No stores matched your filters yet. Try widening your search.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="store-list-wrapper">
-      {filters && <div className="store-list-filters">{filters}</div>}
-      {error && <p className="inline-alert">{error}</p>}
-      <ul className="store-list">
-        {stores.map((store) => (
-          <li key={store.id}>
-            <button
-              type="button"
-              className={`store-card ${selectedId === store.id ? 'selected' : ''}`}
-              onClick={() => onSelect(store)}
-            >
-              <div className="store-card__header">
-                <h3>{store.name}</h3>
-                {typeof store.distanceKm === 'number' && (
-                  <span className="badge">{store.distanceKm.toFixed(1)} km</span>
-                )}
-              </div>
-              <p className="store-address">{store.address}</p>
-              <p className="store-hours">Hours: {store.hours}</p>
-              {store.deliveryEta && <p className="store-delivery">Delivery: {store.deliveryEta}</p>}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-const FilterBar = ({
-  manualLocationInput,
-  onManualLocationChange,
-  onManualSearch,
-  onUseMyLocation,
-  locationStatus,
-  radius,
-  onRadiusChange,
-  filtersExpanded,
-  onToggleFilters,
-  headerZip,
-  headerDeliveryEta,
-  detailsId = 'location-filters',
-}) => {
-  return (
-    <section className="filter-bar" aria-label="Location and provider filters">
-      <div className="filter-summary">
-        <button
-          type="button"
-          className="filter-toggle"
-          onClick={onToggleFilters}
-          aria-expanded={filtersExpanded}
-          aria-controls={detailsId}
-        >
-          {filtersExpanded ? 'Hide filters' : 'Show filters'}
-        </button>
-
-        <form className="filter-search" onSubmit={onManualSearch}>
-          <label className="sr-only" htmlFor="filter-search-input">
-            Search by city, zip, or store name
-          </label>
-          <input
-            id="filter-search-input"
-            type="search"
-            placeholder="Search by city, zip, or store"
-            value={manualLocationInput}
-            onChange={(event) => onManualLocationChange(event.target.value)}
-          />
-          <button type="submit" className="sr-only">
-            Apply search
-          </button>
-        </form>
-
-        <div className="filter-badges" role="status" aria-live="polite">
-          <span className="badge">ZIP: {headerZip}</span>
-          <span className="badge">Radius: {radius} km</span>
-          <span className="badge">Est. Delivery: {headerDeliveryEta}</span>
-        </div>
-
-        {locationStatus && !filtersExpanded && (
-          <span className="muted status-text status-inline">{locationStatus}</span>
-        )}
-
-        <button type="button" className="button-ghost" onClick={onUseMyLocation}>
-          Use my location
-        </button>
-      </div>
-
-      {filtersExpanded && (
-        <div className="filter-details" id={detailsId}>
-          <div className="filter-detail-row">
-            <label htmlFor="radius-slider">Radius: {radius} km</label>
-            <input
-              id="radius-slider"
-              type="range"
-              min="1"
-              max="25"
-              step="1"
-              value={radius}
-              onChange={(event) => onRadiusChange(Number(event.target.value))}
-            />
-          </div>
-          {locationStatus && <span className="muted status-text">{locationStatus}</span>}
-        </div>
-      )}
-    </section>
-  )
-}
-
-const ProductFilterControls = ({
-  filter,
-  onFilterChange,
-  categories,
-  activeCategory,
-  onCategoryChange,
-  inputId,
-  showSearch = true,
-  showCategories = true,
-  layout = 'stacked',
-}) => {
-  const hasCategories = showCategories && categories.length > 1
-  return (
-    <div className={`product-filters product-filters--${layout}`}>
-      {showSearch && (
-        <div className="product-filters__search">
-          <label className="sr-only" htmlFor={inputId}>
-            Search products
-          </label>
-          <input
-            id={inputId}
-            type="search"
-            placeholder="Search products"
-            value={filter}
-            onChange={(event) => onFilterChange(event.target.value)}
-          />
-        </div>
-      )}
-      {hasCategories && (
-        <div className="category-filters">
-          {categories.map((category) => (
-            <button
-              key={category}
-              type="button"
-              className={`filter-chip ${activeCategory === category ? 'active' : ''}`}
-              onClick={() => onCategoryChange(category)}
-            >
-              {category === 'all' ? 'All items' : category}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-const SidebarFilters = ({
+const ProductCatalog = ({
+  products,
+  loading,
+  error,
+  onAddToCart,
   productFilter,
   onProductFilterChange,
   categories,
@@ -407,98 +244,120 @@ const SidebarFilters = ({
   onPriceMaxChange,
   maxDeliveryMinutes,
   onMaxDeliveryMinutesChange,
+  storesLoading,
+  storesError,
+  manualLocationInput,
+  onManualLocationChange,
+  onManualSearch,
+  onClearFilters,
 }) => {
   return (
-    <div className="sidebar-filters">
-      <ProductFilterControls
-        filter={productFilter}
-        onFilterChange={onProductFilterChange}
-        categories={categories}
-        activeCategory={activeCategory}
-        onCategoryChange={onCategoryChange}
-        inputId="product-filter-sidebar"
-        layout="sidebar"
-      />
+    <div className="inventory inventory--with-sidebar">
+      <aside className="inventory-sidebar">
+        <form className="filter-section" onSubmit={onManualSearch}>
+          <h3 className="filter-heading">Location</h3>
+          <label className="filter-label" htmlFor="filter-location">
+            Search by city, zip, or store name
+          </label>
+          <div className="filter-input-row">
+            <input
+              id="filter-location"
+              type="search"
+              placeholder="e.g. 10001 or Downtown"
+              value={manualLocationInput}
+              onChange={(event) => onManualLocationChange(event.target.value)}
+            />
+            <button type="submit">Search</button>
+          </div>
+          {storesLoading && <span className="muted filter-status">Loading providers…</span>}
+          {storesError && <p className="inline-alert">{storesError}</p>}
+        </form>
 
-      <div className="sidebar-filters__group">
-        <h3>Price range</h3>
-        <div className="price-filter">
-          <label htmlFor="price-min">Min ($)</label>
+        <div className="filter-section">
+          <h3 className="filter-heading">Products</h3>
+          <label className="filter-label" htmlFor="filter-products">
+            Keyword search
+          </label>
           <input
-            id="price-min"
-            type="number"
-            min="0"
-            step="0.01"
-            value={priceMin}
-            onChange={(event) => onPriceMinChange(event.target.value)}
-            placeholder="0.00"
-          />
-          <label htmlFor="price-max">Max ($)</label>
-          <input
-            id="price-max"
-            type="number"
-            min="0"
-            step="0.01"
-            value={priceMax}
-            onChange={(event) => onPriceMaxChange(event.target.value)}
-            placeholder=""
+            id="filter-products"
+            type="search"
+            placeholder="Search by product name or SKU"
+            value={productFilter}
+            onChange={(event) => onProductFilterChange(event.target.value)}
           />
         </div>
-      </div>
 
-      <div className="sidebar-filters__group">
-        <h3>Delivery</h3>
-        <label htmlFor="delivery-max">Max ETA (minutes)</label>
-        <input
-          id="delivery-max"
-          type="number"
-          min="0"
-          step="5"
-          value={maxDeliveryMinutes}
-          onChange={(event) => onMaxDeliveryMinutesChange(event.target.value)}
-          placeholder="Any"
-        />
-      </div>
-    </div>
-  )
-}
+        {categories.length > 1 && (
+          <div className="filter-section">
+            <h4 className="filter-subheading">Category</h4>
+            <div className="category-filters">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={`filter-chip ${activeCategory === category ? 'active' : ''}`}
+                  onClick={() => onCategoryChange(category)}
+                >
+                  {category === 'all' ? 'All items' : category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
-const ProductCatalog = ({
-  products,
-  filter,
-  onFilterChange,
-  loading,
-  categories,
-  activeCategory,
-  onCategoryChange,
-  onAddToCart,
-  error,
-}) => {
-  return (
-    <div className="inventory">
-      <div className="inventory-header">
-        <h2>Product catalog</h2>
-        <ProductFilterControls
-          filter={filter}
-          onFilterChange={onFilterChange}
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={onCategoryChange}
-          showCategories={false}
-          layout="inline"
-          inputId="product-filter-main"
-        />
-      </div>
-      <ProductFilterControls
-        filter={filter}
-        onFilterChange={onFilterChange}
-        categories={categories}
-        activeCategory={activeCategory}
-        onCategoryChange={onCategoryChange}
-        showSearch={false}
-        layout="chips"
-        inputId="product-filter-main"
-      />
+        <div className="filter-section">
+          <h4 className="filter-subheading">Price range ($)</h4>
+          <div className="filter-field-group">
+            <label htmlFor="filter-price-min">
+              <span className="filter-label">Min</span>
+              <input
+                id="filter-price-min"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={priceMin}
+                onChange={(event) => onPriceMinChange(event.target.value)}
+              />
+            </label>
+            <label htmlFor="filter-price-max">
+              <span className="filter-label">Max</span>
+              <input
+                id="filter-price-max"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={priceMax}
+                onChange={(event) => onPriceMaxChange(event.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <h4 className="filter-subheading">Delivery ETA (minutes)</h4>
+          <label htmlFor="filter-delivery-max">
+            <span className="filter-label">Maximum delivery time</span>
+            <input
+              id="filter-delivery-max"
+              type="number"
+              min="0"
+              step="5"
+              placeholder="Any"
+              value={maxDeliveryMinutes}
+              onChange={(event) => onMaxDeliveryMinutesChange(event.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className="filter-actions">
+          <button type="button" className="button-ghost" onClick={onClearFilters}>
+            Clear filters
+          </button>
+        </div>
+      </aside>
+      <div className="inventory-content">
       {error && <p className="inline-alert">{error}</p>}
       {loading ? (
         <p className="muted">Loading catalog…</p>
@@ -546,6 +405,7 @@ const ProductCatalog = ({
           ))}
         </ul>
       )}
+      </div>
     </div>
   )
 }
@@ -648,14 +508,11 @@ function App() {
   const DEFAULT_DELIVERY_TIME = '30-60 min'
 
   const [coords, setCoords] = useState(null)
-  const [locationStatus, setLocationStatus] = useState('')
   const [manualLocationInput, setManualLocationInput] = useState(DEFAULT_ZIP)
   const [activeManualQuery, setActiveManualQuery] = useState('')
-  const [radius, setRadius] = useState(DEFAULT_RADIUS)
   const [stores, setStores] = useState([])
   const [storesLoading, setStoresLoading] = useState(false)
   const [storesError, setStoresError] = useState('')
-  const [selectedStore, setSelectedStore] = useState(null)
   const [products, setProducts] = useState([])
   const [productsLoading, setProductsLoading] = useState(false)
   const [productsError, setProductsError] = useState('')
@@ -669,7 +526,6 @@ function App() {
   const [customerContact, setCustomerContact] = useState('')
   const [orderStatus, setOrderStatus] = useState(null)
   const [orderSubmitting, setOrderSubmitting] = useState(false)
-  const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
 
   const filterFallbackStores = useCallback(() => {
@@ -681,7 +537,7 @@ function App() {
 
     return enrichedStores
       .filter((store) => {
-        if (coords && typeof store.distanceKm === 'number' && store.distanceKm > radius) {
+        if (coords && typeof store.distanceKm === 'number' && store.distanceKm > DEFAULT_RADIUS) {
           return false
         }
         if (!activeManualQuery) return true
@@ -696,7 +552,7 @@ function App() {
         if (b.distanceKm == null) return -1
         return a.distanceKm - b.distanceKm
       })
-  }, [coords, radius, activeManualQuery])
+  }, [coords, activeManualQuery])
 
   const fetchStores = useCallback(async () => {
     setStoresLoading(true)
@@ -706,7 +562,7 @@ function App() {
       if (coords) {
         params.set('lat', coords.lat)
         params.set('lng', coords.lng)
-        params.set('radius', radius)
+        params.set('radius', DEFAULT_RADIUS)
       }
       if (activeManualQuery) {
         params.set('q', activeManualQuery)
@@ -725,7 +581,7 @@ function App() {
     } finally {
       setStoresLoading(false)
     }
-  }, [coords, radius, activeManualQuery, filterFallbackStores, DEFAULT_DELIVERY_TIME])
+  }, [coords, activeManualQuery, filterFallbackStores, DEFAULT_DELIVERY_TIME])
 
   const fetchProducts = useCallback(async () => {
     setProductsLoading(true)
@@ -735,7 +591,7 @@ function App() {
       if (coords) {
         params.set('lat', coords.lat)
         params.set('lng', coords.lng)
-        params.set('radius', radius)
+        params.set('radius', DEFAULT_RADIUS)
       }
       if (activeManualQuery) {
         params.set('store', activeManualQuery)
@@ -752,23 +608,12 @@ function App() {
     } finally {
       setProductsLoading(false)
     }
-  }, [coords, radius, activeManualQuery, filterFallbackStores])
+  }, [coords, activeManualQuery, filterFallbackStores])
 
   useEffect(() => {
     fetchStores()
     fetchProducts()
   }, [fetchStores, fetchProducts])
-
-  const productCategories = useMemo(() => {
-    const unique = new Set()
-    products.forEach((product) => {
-      if (product.category) {
-        unique.add(product.category)
-      }
-    })
-    const categories = Array.from(unique).sort()
-    return ['all', ...categories]
-  }, [products])
 
   const cartTotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -790,6 +635,17 @@ function App() {
     return Array.from(providerMap.entries()).map(([storeId, name]) => ({ storeId, name }))
   }, [cart])
 
+  const productCategories = useMemo(() => {
+    const unique = new Set()
+    products.forEach((product) => {
+      if (product.category) {
+        unique.add(product.category)
+      }
+    })
+    const categories = Array.from(unique).sort()
+    return ['all', ...categories]
+  }, [products])
+
   const visibleStores = useMemo(() => {
     if (maxDeliveryMinutes === '') return stores
     const maxMinutes = Number(maxDeliveryMinutes)
@@ -808,6 +664,7 @@ function App() {
 
   const filteredProducts = useMemo(() => {
     let result = products
+
     if (productCategory !== 'all') {
       result = result.filter((product) => product.category === productCategory)
     }
@@ -845,12 +702,13 @@ function App() {
         .filter(Boolean)
     }
 
-    if (!productFilter) return result
-    const q = productFilter.toLowerCase()
+    const query = productFilter.trim().toLowerCase()
+    if (!query) return result
+
     return result.filter((product) =>
       [product.name, product.description, product.category, product.sku]
         .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(q)),
+        .some((value) => value.toLowerCase().includes(query)),
     )
   }, [
     products,
@@ -862,25 +720,12 @@ function App() {
     visibleStoreIds,
   ])
 
-  const handleUseMyLocation = () => {
-    if (!('geolocation' in navigator)) {
-      setLocationStatus('Geolocation is not supported by this browser.')
-      return
-    }
-
-    setLocationStatus('Fetching your location…')
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCoords({ lat: position.coords.latitude, lng: position.coords.longitude })
-        setActiveManualQuery('')
-        setLocationStatus('Location detected!')
-        setFiltersExpanded(false)
-      },
-      (error) => {
-        setLocationStatus(error.message || 'Unable to retrieve your location.')
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    )
+  const handleClearFilters = () => {
+    setProductFilter('')
+    setProductCategory('all')
+    setPriceMin('')
+    setPriceMax('')
+    setMaxDeliveryMinutes('')
   }
 
   const handleManualSearch = (event) => {
@@ -888,13 +733,6 @@ function App() {
     const query = manualLocationInput.trim()
     setCoords(null)
     setActiveManualQuery(query)
-    setLocationStatus(query ? `Searching near "${query}"…` : 'Showing all stores')
-    setFiltersExpanded(false)
-  }
-
-  const handleSelectStore = (store) => {
-    setOrderStatus(null)
-    setSelectedStore(store)
   }
 
   const addToCart = (product, provider) => {
@@ -929,19 +767,6 @@ function App() {
       ]
     })
 
-    setSelectedStore((current) => {
-      if (current && current.id === provider.storeId) {
-        return current
-      }
-      return (
-        stores.find((store) => store.id === provider.storeId) ?? {
-          id: provider.storeId,
-          name: provider.storeName,
-          deliveryEta: provider.deliveryEta,
-          address: provider.address,
-        }
-      )
-    })
     setCartOpen(true)
   }
 
@@ -1041,8 +866,6 @@ function App() {
     }
   }
 
-  const headerZip = manualLocationInput || DEFAULT_ZIP
-  const headerDeliveryEta = selectedStore?.deliveryEta || DEFAULT_DELIVERY_TIME
   const cartProviderNote = cartProviders.length
     ? `Cart includes items from ${cartProviders.map((provider) => provider.name).join(', ')}.`
     : 'Add items from the catalog to begin checkout.'
@@ -1053,62 +876,15 @@ function App() {
         <div>
           <h1>Flo fulfillment</h1>
           <p className="muted">
-            Compare products across nearby providers, pick the best option, and place your order in one place.
+            Browse nearby providers, compare pricing, and assemble the perfect cart in minutes.
           </p>
         </div>
         <span className="badge badge--accent">Prototype</span>
       </header>
 
-      <FilterBar
-        manualLocationInput={manualLocationInput}
-        onManualLocationChange={setManualLocationInput}
-        onManualSearch={handleManualSearch}
-        onUseMyLocation={handleUseMyLocation}
-        locationStatus={locationStatus}
-        radius={radius}
-        onRadiusChange={setRadius}
-        filtersExpanded={filtersExpanded}
-        onToggleFilters={() => setFiltersExpanded((prev) => !prev)}
-        headerZip={headerZip}
-        headerDeliveryEta={headerDeliveryEta}
-      />
-
       <StatusBanner status={orderStatus} />
 
       <div className="content-grid">
-        <aside className="panel panel--stores" aria-label="Filters and providers">
-          <header className="panel-header">
-            <h2>Filters & Providers</h2>
-            <p className="muted">
-              Refine by product details or delivery, then choose a store to learn more.
-            </p>
-          </header>
-          <div className="panel-body panel-body--stores">
-            <StoreList
-              stores={visibleStores}
-              selectedId={selectedStore?.id ?? null}
-              loading={storesLoading}
-              error={storesError}
-              onSelect={handleSelectStore}
-              filters={
-                <SidebarFilters
-                  productFilter={productFilter}
-                  onProductFilterChange={setProductFilter}
-                  categories={productCategories}
-                  activeCategory={productCategory}
-                  onCategoryChange={setProductCategory}
-                  priceMin={priceMin}
-                  priceMax={priceMax}
-                  onPriceMinChange={setPriceMin}
-                  onPriceMaxChange={setPriceMax}
-                  maxDeliveryMinutes={maxDeliveryMinutes}
-                  onMaxDeliveryMinutesChange={setMaxDeliveryMinutes}
-                />
-              }
-            />
-          </div>
-        </aside>
-
         <section className="panel panel--products">
           <header className="panel-header">
             <h2>Browse products</h2>
@@ -1120,14 +896,26 @@ function App() {
           <div className="panel-body inventory-body">
             <ProductCatalog
               products={filteredProducts}
-              filter={productFilter}
-              onFilterChange={setProductFilter}
               loading={productsLoading}
+              onAddToCart={addToCart}
+              error={productsError}
+              productFilter={productFilter}
+              onProductFilterChange={setProductFilter}
               categories={productCategories}
               activeCategory={productCategory}
               onCategoryChange={setProductCategory}
-              onAddToCart={addToCart}
-              error={productsError}
+              priceMin={priceMin}
+              priceMax={priceMax}
+              onPriceMinChange={setPriceMin}
+              onPriceMaxChange={setPriceMax}
+              maxDeliveryMinutes={maxDeliveryMinutes}
+              onMaxDeliveryMinutesChange={setMaxDeliveryMinutes}
+              storesLoading={storesLoading}
+              storesError={storesError}
+              manualLocationInput={manualLocationInput}
+              onManualLocationChange={setManualLocationInput}
+              onManualSearch={handleManualSearch}
+              onClearFilters={handleClearFilters}
             />
           </div>
         </section>
