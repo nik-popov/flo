@@ -335,7 +335,7 @@ describe('App', () => {
     const nameInput = await screen.findByLabelText(/your name/i)
     fireEvent.change(nameInput, { target: { value: 'Alex Shopper' } })
 
-    const contactInput = screen.getByLabelText(/contact/i)
+  const contactInput = screen.getByLabelText(/contact \(email or phone\)/i)
     fireEvent.change(contactInput, { target: { value: 'alex@example.com' } })
 
     const placeOrderButton = screen.getByRole('button', { name: /place order/i })
