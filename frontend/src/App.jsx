@@ -264,6 +264,9 @@ const ProductCatalog = ({
   onManualLocationChange,
   onManualSearch,
   onClearFilters,
+  storeOptions = [],
+  selectedStoreId = 'all',
+  onSelectedStoreChange = () => {},
 }) => {
   return (
     <div className="inventory inventory--with-sidebar">
@@ -287,6 +290,26 @@ const ProductCatalog = ({
             {storesLoading && <span className="muted filter-status">Loading providers…</span>}
             {storesError && <p className="inline-alert">{storesError}</p>}
           </form>
+
+          {storeOptions.length > 1 && (
+            <div className="filter-section">
+              <h3 className="filter-heading">Providers</h3>
+              <label className="filter-label" htmlFor="filter-store">
+                Show offers from
+              </label>
+              <select
+                id="filter-store"
+                value={selectedStoreId}
+                onChange={(event) => onSelectedStoreChange(event.target.value)}
+              >
+                {storeOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.id === 'all' ? 'All providers' : option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="filter-section">
             <h3 className="filter-heading">Products</h3>
@@ -700,6 +723,7 @@ function App() {
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [maxDeliveryMinutes, setMaxDeliveryMinutes] = useState('')
+  const [selectedStoreId, setSelectedStoreId] = useState('all')
   const [cart, setCart] = useState([])
   const [customerName, setCustomerName] = useState('')
   const [customerContact, setCustomerContact] = useState('')
@@ -841,6 +865,26 @@ function App() {
     [visibleStores],
   )
 
+  const storeFilterOptions = useMemo(() => {
+    const uniqueStores = new Map()
+    visibleStores.forEach((store) => {
+      if (!store || !store.id) return
+      if (!uniqueStores.has(store.id)) {
+        uniqueStores.set(store.id, store.name || store.id)
+      }
+    })
+    const options = Array.from(uniqueStores.entries()).map(([id, name]) => ({ id, name }))
+    return [{ id: 'all', name: 'All providers' }, ...options]
+  }, [visibleStores])
+
+  useEffect(() => {
+    if (selectedStoreId === 'all') return
+    const storeStillVisible = visibleStores.some((store) => store.id === selectedStoreId)
+    if (!storeStillVisible) {
+      setSelectedStoreId('all')
+    }
+  }, [selectedStoreId, visibleStores])
+
   const filteredProducts = useMemo(() => {
     let result = products
 
@@ -852,13 +896,17 @@ function App() {
     const max = priceMax === '' ? null : Number(priceMax)
     const hasPriceFilter = (min != null && !Number.isNaN(min)) || (max != null && !Number.isNaN(max))
     const restrictToVisibleStores = maxDeliveryMinutes !== ''
+    const restrictToSelectedStore = selectedStoreId !== 'all'
 
-    if (hasPriceFilter || restrictToVisibleStores) {
+    if (hasPriceFilter || restrictToVisibleStores || restrictToSelectedStore) {
       result = result
         .map((product) => {
-          let storeOptions = product.stores
+          let storeOptions = product.stores ?? []
           if (restrictToVisibleStores) {
             storeOptions = storeOptions.filter((store) => visibleStoreIds.has(store.storeId))
+          }
+          if (restrictToSelectedStore) {
+            storeOptions = storeOptions.filter((store) => store.storeId === selectedStoreId)
           }
           if (hasPriceFilter) {
             storeOptions = storeOptions.filter((store) => {
@@ -897,6 +945,7 @@ function App() {
     priceMax,
     maxDeliveryMinutes,
     visibleStoreIds,
+    selectedStoreId,
   ])
 
   const handleClearFilters = () => {
@@ -905,6 +954,7 @@ function App() {
     setPriceMin('')
     setPriceMax('')
     setMaxDeliveryMinutes('')
+    setSelectedStoreId('all')
   }
 
   const handleManualSearch = (event) => {
@@ -1118,6 +1168,9 @@ function App() {
             onManualLocationChange={setManualLocationInput}
             onManualSearch={handleManualSearch}
             onClearFilters={handleClearFilters}
+            storeOptions={storeFilterOptions}
+            selectedStoreId={selectedStoreId}
+            onSelectedStoreChange={setSelectedStoreId}
           />
         </section>
       </div>
