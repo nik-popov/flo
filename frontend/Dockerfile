@@ -8,9 +8,6 @@ RUN npm install
 
 COPY . ./
 
-# Allow the API base URL to be customized at build time
-ENV VITE_API_BASE_URL="https://flo-363950012349.us-east4.run.app"
-
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
