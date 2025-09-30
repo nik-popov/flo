@@ -3,8 +3,9 @@ set -euo pipefail
 
 API_BASE_URL_VALUE="${API_BASE_URL:-${VITE_API_BASE_URL:-/api}}"
 
-TEMPLATE="/usr/share/nginx/html/runtime-config.js.tmpl"
-TARGET="/usr/share/nginx/html/runtime-config.js"
+ASSET_DIR="/app"
+TEMPLATE="${ASSET_DIR}/runtime-config.js.tmpl"
+TARGET="${ASSET_DIR}/runtime-config.js"
 
 export API_BASE_URL="$API_BASE_URL_VALUE"
 
@@ -20,4 +21,8 @@ else
 EOF
 fi
 
-exec nginx -g 'daemon off;'
+PORT="${PORT:-8080}"
+
+echo "[entrypoint] Serving static assets from ${ASSET_DIR} on port ${PORT}"
+
+exec serve -s "${ASSET_DIR}" -l "${PORT}"
