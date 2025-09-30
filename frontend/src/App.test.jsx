@@ -99,6 +99,7 @@ describe('App', () => {
 
     const locationInput = await screen.findByLabelText(/search by city, zip, or store name/i)
     expect(locationInput).toHaveValue('10001')
+    expect(screen.getByRole('heading', { level: 1, name: /(hi|hello|welcome back) alex!/i })).toBeInTheDocument()
 
     expect(await screen.findByText(/Honeycrisp Apples/i)).toBeInTheDocument()
     expect(screen.getByText(/2 provider/i)).toBeInTheDocument()
@@ -122,9 +123,12 @@ describe('App', () => {
     expect(quantityInputs).toHaveLength(2)
 
   expect(screen.getByText(/Items in your cart/i)).toBeInTheDocument()
-  expect(screen.getByText(/2 items · \$5\.28/i)).toBeInTheDocument()
+  expect(screen.getByText(/2 items/i, { selector: '.cart__count' })).toBeInTheDocument()
   expect(screen.getByText(/Order total/i)).toBeInTheDocument()
   expect(screen.getByText(/\$5\.28/, { selector: '.cart-total-amount' })).toBeInTheDocument()
+  expect(screen.getByText(/Membership tier/i)).toBeInTheDocument()
+  expect(screen.getByText(/Gold member/i)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Profile/i })).toBeInTheDocument()
     expect(screen.getAllByText(/Sample Store/)).not.toHaveLength(0)
     expect(screen.getAllByText(/Uptown Market/)).not.toHaveLength(0)
     expect(screen.getByText(/Cart includes items from Sample Store, Uptown Market./i)).toBeInTheDocument()
@@ -299,6 +303,19 @@ describe('App', () => {
     })
   })
 
+  it('shows profile details with points and contact info', async () => {
+    fetch
+      .mockImplementationOnce(() => createFetchResponse({ stores: [] }))
+      .mockImplementationOnce(() => createFetchResponse({ products: [] }))
+
+    renderApp(['/profile'])
+
+    expect(await screen.findByRole('heading', { name: /Account overview/i })).toBeInTheDocument()
+    expect(screen.getByText(/Flo Points Bank/i)).toBeInTheDocument()
+    expect(screen.getByText(/Visa ending in 4242/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/alex@example.com/i)).toHaveLength(2)
+  })
+
   it('submits the cart and displays order confirmation details', async () => {
     fetch
       .mockImplementationOnce(() =>
@@ -463,6 +480,9 @@ describe('App', () => {
     const historyCall = fetch.mock.calls[3]
     expect(historyCall[0]).toBe('/api/orders?contact=alex%40example.com')
     expect(historyCall[1]?.method ?? 'GET').toBe('GET')
+
+    const ordersNavLink = screen.getByRole('link', { name: /orders/i })
+    fireEvent.click(ordersNavLink)
 
     expect(await screen.findByText(/Showing updates for/i)).toHaveTextContent(
       /alex@example.com/i,

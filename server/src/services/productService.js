@@ -29,6 +29,7 @@ const upsertProduct = (catalogMap, store, item) => {
       category: item.category,
       unit: item.unit,
       brand: item.brand || null,
+      imageUrl: item.imageUrl || null,
       stores: [],
     });
   }
@@ -36,6 +37,9 @@ const upsertProduct = (catalogMap, store, item) => {
   const product = catalogMap.get(item.sku);
   if (!product.brand && item.brand) {
     product.brand = item.brand;
+  }
+  if (!product.imageUrl && item.imageUrl) {
+    product.imageUrl = item.imageUrl;
   }
   product.stores.push({
     storeId: store.id,

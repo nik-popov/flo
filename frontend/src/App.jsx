@@ -99,6 +99,8 @@ const FALLBACK_INVENTORY = {
       price: 2.39,
       unit: 'lb',
       quantityAvailable: 140,
+      imageUrl:
+        'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'MLK-002',
@@ -106,9 +108,11 @@ const FALLBACK_INVENTORY = {
       description: '1 gallon organic whole milk.',
       category: 'Dairy',
       brand: 'Green Valley Dairy',
-      price: 5.29,
+      price: 5.19,
       unit: 'gallon',
-      quantityAvailable: 45,
+      quantityAvailable: 55,
+      imageUrl:
+        'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'BRT-003',
@@ -118,7 +122,9 @@ const FALLBACK_INVENTORY = {
       brand: 'Sunrise Baking Co.',
       price: 4.5,
       unit: 'each',
-      quantityAvailable: 30,
+      quantityAvailable: 36,
+      imageUrl:
+        'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'SNK-021',
@@ -126,9 +132,47 @@ const FALLBACK_INVENTORY = {
       description: 'Assorted nuts, dried fruit, and chocolate.',
       category: 'Snacks',
       brand: 'TrailMix Co.',
-      price: 7.99,
+      price: 7.79,
       unit: 'pack',
-      quantityAvailable: 85,
+      quantityAvailable: 90,
+      imageUrl:
+        'https://images.unsplash.com/photo-1589308078054-83216e1e4a62?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'CFE-020',
+      name: 'Cold Brew Coffee Concentrate',
+      description: 'Ready-to-mix cold brew concentrate.',
+      category: 'Beverages',
+      brand: 'BrewMaster Roasters',
+      price: 12.59,
+      unit: '32oz',
+      quantityAvailable: 60,
+      imageUrl:
+        'https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'FZN-062',
+      name: 'Frozen Berry Medley',
+      description: 'Blueberries, raspberries, and blackberries flash frozen at peak ripeness.',
+      category: 'Frozen',
+      brand: 'Harvest Freezer Co.',
+      price: 6.49,
+      unit: '12oz',
+      quantityAvailable: 70,
+      imageUrl:
+        'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'CHS-024',
+      name: 'Aged Cheddar Cheese',
+      description: '12-month aged farmhouse cheddar.',
+      category: 'Dairy',
+      brand: 'Heritage Creamery',
+      price: 7.29,
+      unit: '8oz',
+      quantityAvailable: 48,
+      imageUrl:
+        'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=400&q=80',
     },
   ],
   'store-202': [
@@ -138,9 +182,11 @@ const FALLBACK_INVENTORY = {
       description: 'Fresh locally sourced apples.',
       category: 'Produce',
       brand: 'Orchard Fresh',
-      price: 2.54,
+      price: 2.58,
       unit: 'lb',
-      quantityAvailable: 100,
+      quantityAvailable: 120,
+      imageUrl:
+        'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'VEG-010',
@@ -148,9 +194,11 @@ const FALLBACK_INVENTORY = {
       description: 'A mix of spinach, arugula, and kale.',
       category: 'Produce',
       brand: 'Leafy Greens Collective',
-      price: 4.19,
+      price: 4.09,
       unit: 'bag',
-      quantityAvailable: 75,
+      quantityAvailable: 80,
+      imageUrl:
+        'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'EGG-012',
@@ -158,9 +206,11 @@ const FALLBACK_INVENTORY = {
       description: 'One dozen large brown eggs.',
       category: 'Dairy',
       brand: 'Happy Hens Farm',
-      price: 4.75,
+      price: 4.85,
       unit: 'dozen',
-      quantityAvailable: 90,
+      quantityAvailable: 100,
+      imageUrl:
+        'https://images.unsplash.com/photo-1517959105821-eaf2591984d8?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'SNK-021',
@@ -168,9 +218,47 @@ const FALLBACK_INVENTORY = {
       description: 'Assorted nuts, dried fruit, and chocolate.',
       category: 'Snacks',
       brand: 'TrailMix Co.',
-      price: 8.49,
+      price: 8.39,
       unit: 'pack',
       quantityAvailable: 95,
+      imageUrl:
+        'https://images.unsplash.com/photo-1589308078054-83216e1e4a62?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'CFE-020',
+      name: 'Cold Brew Coffee Concentrate',
+      description: 'Ready-to-mix cold brew concentrate.',
+      category: 'Beverages',
+      brand: 'BrewMaster Roasters',
+      price: 12.89,
+      unit: '32oz',
+      quantityAvailable: 52,
+      imageUrl:
+        'https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'DRK-090',
+      name: 'Sparkling Water Variety Pack',
+      description: '12-pack of naturally flavored sparkling water.',
+      category: 'Beverages',
+      brand: 'Cascade Fizz',
+      price: 6.29,
+      unit: '12pk',
+      quantityAvailable: 130,
+      imageUrl:
+        'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'HHL-075',
+      name: 'Bamboo Paper Towels',
+      description: 'Sustainably sourced, extra-absorbent paper towels.',
+      category: 'Household',
+      brand: 'EcoShine Home',
+      price: 5.99,
+      unit: '6pk',
+      quantityAvailable: 60,
+      imageUrl:
+        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80',
     },
   ],
   'store-303': [
@@ -180,9 +268,11 @@ const FALLBACK_INVENTORY = {
       description: 'Fresh locally sourced apples.',
       category: 'Produce',
       brand: 'Orchard Fresh',
-      price: 2.62,
+      price: 2.52,
       unit: 'lb',
-      quantityAvailable: 110,
+      quantityAvailable: 150,
+      imageUrl:
+        'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'VEG-010',
@@ -190,9 +280,11 @@ const FALLBACK_INVENTORY = {
       description: 'A mix of spinach, arugula, and kale.',
       category: 'Produce',
       brand: 'Leafy Greens Collective',
-      price: 3.95,
+      price: 3.89,
       unit: 'bag',
-      quantityAvailable: 120,
+      quantityAvailable: 135,
+      imageUrl:
+        'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'CFE-020',
@@ -200,9 +292,11 @@ const FALLBACK_INVENTORY = {
       description: 'Ready-to-mix cold brew concentrate.',
       category: 'Beverages',
       brand: 'BrewMaster Roasters',
-      price: 12.99,
+      price: 12.39,
       unit: '32oz',
-      quantityAvailable: 55,
+      quantityAvailable: 58,
+      imageUrl:
+        'https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=400&q=80',
     },
     {
       sku: 'CLN-022',
@@ -210,9 +304,86 @@ const FALLBACK_INVENTORY = {
       description: 'Biodegradable citrus-scented dish soap.',
       category: 'Household',
       brand: 'EcoShine Home',
-      price: 3.99,
+      price: 3.89,
       unit: '16oz',
-      quantityAvailable: 75,
+      quantityAvailable: 80,
+      imageUrl:
+        'https://images.unsplash.com/photo-1615485290382-7275d6b9a369?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'FZN-062',
+      name: 'Frozen Berry Medley',
+      description: 'Blueberries, raspberries, and blackberries flash frozen at peak ripeness.',
+      category: 'Frozen',
+      brand: 'Harvest Freezer Co.',
+      price: 6.19,
+      unit: '12oz',
+      quantityAvailable: 90,
+      imageUrl:
+        'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'PRD-055',
+      name: 'Plant Power Smoothie Packs',
+      description: 'Ready-to-blend smoothies with spinach, mango, and chia.',
+      category: 'Frozen',
+      brand: 'VitalBlend',
+      price: 8.49,
+      unit: '4ct',
+      quantityAvailable: 65,
+      imageUrl:
+        'https://images.unsplash.com/photo-1497534446932-c925b458314e?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      sku: 'DRK-090',
+      name: 'Sparkling Water Variety Pack',
+      description: '12-pack of naturally flavored sparkling water.',
+      category: 'Beverages',
+      brand: 'Cascade Fizz',
+      price: 5.99,
+      unit: '12pk',
+      quantityAvailable: 160,
+      imageUrl:
+        'https://images.unsplash.com/photo-1527169402691-feff5539e52c?auto=format&fit=crop&w=400&q=80',
+    },
+  ],
+}
+
+const CUSTOMER_PROFILE = {
+  member: {
+    name: 'Alex Shopper',
+    membershipId: 'FL-2048-XS',
+    tier: 'Gold member',
+    memberSince: 'March 12, 2022',
+  },
+  pointsBank: {
+    balance: 18450,
+    pending: 320,
+    availableToRedeem: 12500,
+    institution: 'Flo Points Bank',
+    accountReference: 'Points vault ••••5123',
+    autoRedeem: true,
+    lastDeposit: 'Sep 20, 2025 · +580 pts',
+  },
+  contact: {
+    email: 'alex@example.com',
+    phone: '+1 (917) 555-0144',
+    preferredContact: 'Email',
+    supportPin: '9034',
+    address: '123 Elm Street, Springfield, NY 10001',
+  },
+  paymentMethods: [
+    {
+      type: 'Card',
+      label: 'Visa ending in 4242',
+      status: 'Primary payment method',
+      updated: 'Aug 11, 2025',
+    },
+    {
+      type: 'Bank account',
+      label: 'Community Credit Union • Checking ••••3181',
+      status: 'Backup deposit account',
+      updated: 'Jul 28, 2025',
     },
   ],
 }
@@ -271,6 +442,7 @@ const aggregateProducts = (stores, inventoryLookup) => {
           category: item.category,
           brand: item.brand || null,
           unit: item.unit,
+          imageUrl: item.imageUrl || null,
           stores: [],
         })
       }
@@ -278,6 +450,9 @@ const aggregateProducts = (stores, inventoryLookup) => {
       const entry = catalog.get(item.sku)
       if (!entry.brand && item.brand) {
         entry.brand = item.brand
+      }
+      if (!entry.imageUrl && item.imageUrl) {
+        entry.imageUrl = item.imageUrl
       }
       entry.stores.push({
         storeId: store.id,
@@ -506,54 +681,99 @@ const ProductCatalog = ({
                   : null
                 const bestPrice = formatCurrencyValue(primaryOption?.price)
                 const ceilingPrice = formatCurrencyValue(priceCeiling)
+                const productInitial =
+                  typeof product.name === 'string' && product.name.length
+                    ? product.name.charAt(0).toUpperCase()
+                    : '?'
+                const imageAlt = product.name ? `${product.name} thumbnail` : 'Product thumbnail'
+                const placeholderLabel = product.name
+                  ? `No image available for ${product.name}`
+                  : 'No image available'
+                const isSingleProvider = product.storeCount === 1
+
+                const summaryClassName = ['product-card__summary']
+                if (isSingleProvider) {
+                  summaryClassName.push('product-card__summary--solo')
+                } else {
+                  summaryClassName.push('product-card__summary--full', 'product-card__summary--compact')
+                }
+
+                const summaryClassNameString = summaryClassName.filter(Boolean).join(' ')
+
+                const renderSummary = () => (
+                  <div className={summaryClassNameString}>
+                    <span className="product-card__summary-label">Best price</span>
+                    <span className="product-card__summary-price">
+                      {bestPrice ? (
+                        <>
+                          ${bestPrice}
+                          {product.unit ? (
+                            <span className="product-card__summary-unit"> / {product.unit}</span>
+                          ) : null}
+                        </>
+                      ) : (
+                        'Price unavailable'
+                      )}
+                    </span>
+                    {bestPrice && ceilingPrice && ceilingPrice !== bestPrice && (
+                      <span className="product-card__summary-meta">Up to ${ceilingPrice}</span>
+                    )}
+                    <span className="product-card__summary-meta">
+                      {product.storeCount} offer{product.storeCount === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                )
+
+                const summaryElement = primaryOption ? renderSummary() : null
+                const headerClassNames = ['product-card__header']
+                if (!isSingleProvider) {
+                  headerClassNames.push('product-card__header--multi')
+                }
+                const headerClassNameString = headerClassNames.join(' ')
 
                 return (
-                  <li key={product.sku} className="inventory-item product-card">
-                    <div className="product-card__header">
-                      <div className="product-card__details">
-                        <h3>{product.name}</h3>
-                        <p className="muted">{product.description}</p>
-                        <div className="inventory-meta">
-                          <span className="badge badge--subtle">{product.category}</span>
-                          {product.brand && (
-                            <span className="badge badge--outline">{product.brand}</span>
+                  <li
+                    key={product.sku}
+                    className={`inventory-item product-card ${isSingleProvider ? 'product-card--solo' : ''}`.trim()}
+                  >
+                    <div className={headerClassNameString}>
+                      <div className="product-card__lead">
+                        <div className="product-card__media">
+                          {product.imageUrl ? (
+                            <img src={product.imageUrl} alt={imageAlt} loading="lazy" />
+                          ) : (
+                            <div
+                              className="product-card__placeholder"
+                              role="img"
+                              aria-label={placeholderLabel}
+                            >
+                              <span>{productInitial}</span>
+                            </div>
                           )}
-                          <span className="inventory-meta__item">
-                            <span className="inventory-meta__label">SKU</span>
-                            <span className="inventory-meta__value">{product.sku}</span>
-                          </span>
-                          <span className="inventory-meta__item">
-                            <span className="inventory-meta__label">Providers</span>
-                            <span className="inventory-meta__value">
-                              {product.storeCount}{' '}
-                              {product.storeCount === 1 ? 'provider' : 'providers'}
+                        </div>
+                        <div className="product-card__details">
+                          <h3>{product.name}</h3>
+                          <p className="muted">{product.description}</p>
+                          <div className="inventory-meta">
+                            <span className="badge badge--subtle">{product.category}</span>
+                            {product.brand && (
+                              <span className="badge badge--outline">{product.brand}</span>
+                            )}
+                            <span className="inventory-meta__item">
+                              <span className="inventory-meta__label">SKU</span>
+                              <span className="inventory-meta__value">{product.sku}</span>
                             </span>
-                          </span>
+                            <span className="inventory-meta__item">
+                              <span className="inventory-meta__label">Providers</span>
+                              <span className="inventory-meta__value">
+                                {product.storeCount}{' '}
+                                {product.storeCount === 1 ? 'provider' : 'providers'}
+                              </span>
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      {primaryOption && (
-                        <div className="product-card__summary">
-                          <span className="product-card__summary-label">Best price</span>
-                          <span className="product-card__summary-price">
-                            {bestPrice ? (
-                              <>
-                                ${bestPrice}
-                                {product.unit ? (
-                                  <span className="product-card__summary-unit"> / {product.unit}</span>
-                                ) : null}
-                              </>
-                            ) : (
-                              'Price unavailable'
-                            )}
-                          </span>
-                          {bestPrice && ceilingPrice && ceilingPrice !== bestPrice && (
-                            <span className="product-card__summary-meta">Up to ${ceilingPrice}</span>
-                          )}
-                          <span className="product-card__summary-meta">
-                            {product.storeCount} offer{product.storeCount === 1 ? '' : 's'}
-                          </span>
-                        </div>
-                      )}
+                      {summaryElement}
                     </div>
 
                     {primaryOption && (
@@ -724,7 +944,6 @@ const Cart = ({ items, onUpdateQuantity, onRemove, total }) => {
         <h2>Items in your cart</h2>
         <span className="cart__count">
           {totalQuantity} item{totalQuantity === 1 ? '' : 's'}
-          {formattedTotal ? ` · $${formattedTotal}` : ''}
         </span>
       </header>
       <ul className="cart-list">
@@ -1110,6 +1329,131 @@ const CartPage = ({ cartProviderNote, cartProps, checkoutFormProps }) => (
   </div>
 )
 
+const ProfilePage = () => {
+  const { member, pointsBank, contact, paymentMethods } = CUSTOMER_PROFILE
+  const formatPoints = (value) => value.toLocaleString()
+
+  return (
+    <div className="page-content profile-page">
+      <section className="inventory-content__card profile-summary">
+        <header className="profile-summary__header">
+          <h2>Account overview</h2>
+          <p className="muted">
+            Review membership details, reward balances, and the accounts linked to your Flo profile.
+          </p>
+        </header>
+        <dl className="profile-summary__grid">
+          <div>
+            <dt>Member name</dt>
+            <dd>{member.name}</dd>
+          </div>
+          <div>
+            <dt>Membership tier</dt>
+            <dd>{member.tier}</dd>
+          </div>
+          <div>
+            <dt>Member ID</dt>
+            <dd>{member.membershipId}</dd>
+          </div>
+          <div>
+            <dt>Member since</dt>
+            <dd>{member.memberSince}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="profile-grid">
+        <article className="inventory-content__card profile-card">
+          <header>
+            <h3>Points &amp; rewards</h3>
+            <p className="muted">
+              Points bank keeps store loyalty credits ready to auto-apply at checkout.
+            </p>
+          </header>
+          <ul className="profile-list">
+            <li>
+              <span>Points balance</span>
+              <strong>{formatPoints(pointsBank.balance)} pts</strong>
+            </li>
+            <li>
+              <span>Pending points</span>
+              <span>{formatPoints(pointsBank.pending)} pts clearing in 24h</span>
+            </li>
+            <li>
+              <span>Available to redeem</span>
+              <span>{formatPoints(pointsBank.availableToRedeem)} pts</span>
+            </li>
+            <li>
+              <span>Points bank</span>
+              <span>{pointsBank.institution}</span>
+            </li>
+            <li>
+              <span>Account reference</span>
+              <span>{pointsBank.accountReference}</span>
+            </li>
+            <li>
+              <span>Auto redeem</span>
+              <span>{pointsBank.autoRedeem ? 'Enabled for delivery credits' : 'Disabled'}</span>
+            </li>
+            <li>
+              <span>Last deposit</span>
+              <span>{pointsBank.lastDeposit}</span>
+            </li>
+          </ul>
+        </article>
+
+        <article className="inventory-content__card profile-card">
+          <header>
+            <h3>Contact information</h3>
+            <p className="muted">Update how couriers and support reach you.</p>
+          </header>
+          <ul className="profile-list">
+            <li>
+              <span>Email</span>
+              <span>{contact.email}</span>
+            </li>
+            <li>
+              <span>Phone</span>
+              <span>{contact.phone}</span>
+            </li>
+            <li>
+              <span>Preferred contact</span>
+              <span>{contact.preferredContact}</span>
+            </li>
+            <li>
+              <span>Support PIN</span>
+              <span>{contact.supportPin}</span>
+            </li>
+            <li className="profile-list__address">
+              <span>Default address</span>
+              <span>{contact.address}</span>
+            </li>
+          </ul>
+        </article>
+
+        <article className="inventory-content__card profile-card">
+          <header>
+            <h3>Payment &amp; banking</h3>
+            <p className="muted">Manage cards and settlement accounts tied to your orders.</p>
+          </header>
+          <ul className="profile-list">
+            {paymentMethods.map((method) => (
+              <li key={`${method.type}-${method.label}`}>
+                <span>{method.label}</span>
+                <span>
+                  {method.status}
+                  <br />
+                  <small className="muted">Updated {method.updated}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </section>
+    </div>
+  )
+}
+
 const DemoPage = ({ catalogProps, orderHistoryProps }) => (
   <div className="content-grid">
     <section className="products-view">
@@ -1129,8 +1473,8 @@ const MarketplaceNavigation = () => {
   const navItems = [
     { to: '/catalog', label: 'Catalog' },
     { to: '/orders', label: 'Orders' },
+    { to: '/profile', label: 'Profile' },
     { to: '/cart', label: 'Cart' },
-    { to: '/demo', label: 'All-in-one demo' },
   ]
 
   return (
@@ -1744,10 +2088,56 @@ function App() {
     ? `Cart includes items from ${cartProviders.map((provider) => provider.name).join(', ')}.`
     : 'Add items from the catalog to begin checkout.'
 
-  const storeStatValue = storesLoading ? '—' : visibleStores.length
-  const productStatValue = productsLoading ? '—' : filteredProducts.length
-  const cartTotalDisplay = cartItemCount ? `$${cartTotal.toFixed(2)}` : '$0.00'
-  const cartItemsHint = cartItemCount ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'}` : 'Cart empty'
+  const { member, pointsBank, contact } = CUSTOMER_PROFILE
+  const heroTitle = useMemo(() => {
+    const fullName = typeof member?.name === 'string' ? member.name.trim() : ''
+    if (!fullName) return 'Flo fulfillment'
+    const [firstName] = fullName.split(' ')
+    return firstName || fullName
+  }, [member])
+
+  const greetingLine = useMemo(() => {
+    const salutations = ['Hi', 'Hello', 'Welcome back']
+    const fullName = typeof member?.name === 'string' ? member.name.trim() : ''
+    const [firstName] = fullName.split(' ')
+    const nameToken = firstName || fullName || 'there'
+    const index = nameToken.length % salutations.length
+    const prefix = salutations[index]
+    if (prefix === 'Welcome back') {
+      return `${prefix}`
+    }
+    return `${prefix}`
+  }, [member])
+
+  const heroStats = useMemo(
+    () => [
+      {
+        key: 'membership-tier',
+        label: 'Membership tier',
+        value: member?.tier ?? '—',
+        meta: member?.memberSince ? `Member since ${member.memberSince}` : null,
+      },
+      {
+        key: 'points-balance',
+        label: 'Points balance',
+        value:
+          typeof pointsBank?.balance === 'number'
+            ? `${pointsBank.balance.toLocaleString()} pts`
+            : '—',
+        meta:
+          typeof pointsBank?.availableToRedeem === 'number'
+            ? `${pointsBank.availableToRedeem.toLocaleString()} pts ready to redeem`
+            : pointsBank?.institution ?? null,
+      },
+      {
+        key: 'primary-contact',
+        label: 'Primary contact',
+        value: contact?.email ?? '—',
+        meta: contact?.preferredContact ? `Preferred: ${contact.preferredContact}` : null,
+      },
+    ],
+    [member, pointsBank, contact],
+  )
   const selectedOrder = useMemo(
     () => orderHistory.find((order) => order.id === selectedOrderId) || null,
     [orderHistory, selectedOrderId],
@@ -1819,28 +2209,24 @@ function App() {
       <header className="app-header">
         <div className="app-header__content">
           <div className="app-header__badge">
-            <span className="badge badge--accent">Prototype</span>
+            <span className="badge badge--accent">Early access</span>
           </div>
-          <h1>Flo fulfillment</h1>
+          <div className="app-header__title">
+            <h1>{greetingLine} {heroTitle}!</h1>
+          </div>
           <p className="muted">
             Browse nearby providers, compare pricing, and assemble the perfect cart in minutes.
           </p>
         </div>
         <div className="app-header__meta">
           <div className="app-header__stats">
-            <div className="stat-card" aria-live="polite">
-              <span>Providers nearby</span>
-              <strong>{storeStatValue}</strong>
-            </div>
-            <div className="stat-card" aria-live="polite">
-              <span>Products in view</span>
-              <strong>{productStatValue}</strong>
-            </div>
-            <div className="stat-card" aria-live="polite">
-              <span>Cart total</span>
-              <strong>{cartTotalDisplay}</strong>
-              <div className="stat-card__meta">{cartItemsHint}</div>
-            </div>
+            {heroStats.map((stat) => (
+              <div key={stat.key} className="stat-card" aria-live="polite">
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+                {stat.meta ? <div className="stat-card__meta">{stat.meta}</div> : null}
+              </div>
+            ))}
           </div>
         </div>
         <div className="app-header__nav">
@@ -1865,6 +2251,7 @@ function App() {
             />
           }
         />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route
           path="/demo"
           element={<DemoPage catalogProps={catalogProps} orderHistoryProps={orderHistoryProps} />}
