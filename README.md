@@ -85,7 +85,10 @@ docker build -t flo-frontend ./frontend
 docker run --rm -p 8080:8080 flo-frontend
 ```
 
-By default the frontend assumes the API is reachable via the same origin at `/api`. When building the image you can point to a remote API by passing `--build-arg VITE_API_BASE_URL="https://your-api.example.com"`.
+By default the frontend bundle is built against the production API at
+`https://flo-363950012349.us-east4.run.app/`. Override it for other environments
+by supplying a different build argument, for example
+`--build-arg VITE_API_BASE_URL="https://your-api.example.com"`.
 
 ### Run both services with Docker Compose
 
