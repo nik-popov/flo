@@ -1049,16 +1049,40 @@ function App() {
     ? `Cart includes items from ${cartProviders.map((provider) => provider.name).join(', ')}.`
     : 'Add items from the catalog to begin checkout.'
 
+  const storeStatValue = storesLoading ? '—' : visibleStores.length
+  const productStatValue = productsLoading ? '—' : filteredProducts.length
+  const cartTotalDisplay = cartItemCount ? `$${cartTotal.toFixed(2)}` : '$0.00'
+  const cartItemsHint = cartItemCount ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'}` : 'Cart empty'
+
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
+        <div className="app-header__content">
+          <div className="app-header__badge">
+            <span className="badge badge--accent">Prototype</span>
+          </div>
           <h1>Flo fulfillment</h1>
           <p className="muted">
             Browse nearby providers, compare pricing, and assemble the perfect cart in minutes.
           </p>
         </div>
-        <span className="badge badge--accent">Prototype</span>
+        <div className="app-header__meta">
+          <div className="app-header__stats">
+            <div className="stat-card" aria-live="polite">
+              <span>Providers nearby</span>
+              <strong>{storeStatValue}</strong>
+            </div>
+            <div className="stat-card" aria-live="polite">
+              <span>Products in view</span>
+              <strong>{productStatValue}</strong>
+            </div>
+            <div className="stat-card" aria-live="polite">
+              <span>Cart total</span>
+              <strong>{cartTotalDisplay}</strong>
+              <div className="stat-card__meta">{cartItemsHint}</div>
+            </div>
+          </div>
+        </div>
       </header>
 
       <StatusBanner status={orderStatus} />

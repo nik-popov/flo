@@ -1,23 +1,48 @@
 :root {
+  color-scheme: light;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #0f172a;
-  background-color: #f1f5f9;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --color-page: #f4f6fb;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f7f8fc;
+  --color-border: #d8e0ef;
+  --color-border-strong: #c2cbe1;
+  --color-text: #0f172a;
+  --color-muted: #5b6477;
+  --color-primary: #3053f6;
+  --color-primary-strong: #2544d6;
+  --color-primary-soft: rgba(48, 83, 246, 0.1);
+  --color-accent: #1fb6ff;
+  --color-success-soft: rgba(34, 197, 94, 0.14);
+  --color-success-text: #047857;
+  --color-error-soft: rgba(239, 68, 68, 0.14);
+  --color-error-text: #b91c1c;
+  --shadow-card: 0 24px 48px rgba(15, 23, 42, 0.08);
+  --shadow-soft: 0 14px 32px rgba(15, 23, 42, 0.06);
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 60%),
-    radial-gradient(circle at bottom, rgba(14, 165, 233, 0.1), transparent 65%),
-    #f1f5f9;
-  color: inherit;
+  background: linear-gradient(180deg, rgba(48, 83, 246, 0.1), transparent 22%),
+    radial-gradient(circle at top right, rgba(31, 182, 255, 0.16), transparent 55%),
+    var(--color-page);
+  color: var(--color-text);
 }
 
 a {
   color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
