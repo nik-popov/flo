@@ -79,6 +79,43 @@
   z-index: 1;
 }
 
+.app-header__nav {
+  position: relative;
+  z-index: 1;
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+}
+
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.app-nav__link {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(48, 83, 246, 0.08);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.app-nav__link:hover {
+  background: rgba(48, 83, 246, 0.16);
+  color: var(--color-primary-strong);
+}
+
+.app-nav__link--active {
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(48, 83, 246, 0.2);
+}
+
 .app-header__badge {
   display: flex;
   justify-content: flex-start;
@@ -148,9 +185,20 @@
   color: var(--color-text);
 }
 
+.badge--outline {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.page-content {
+  display: grid;
   gap: clamp(1.5rem, 3vw, 2.5rem);
 }
 
@@ -254,6 +302,12 @@
   letter-spacing: 0.06em;
 }
 
+.filter-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
 .filter-input-row {
   display: flex;
   gap: 0.5rem;
@@ -285,7 +339,7 @@
   justify-content: flex-start;
 }
 
-.category-filters {
+.filter-chip-group {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -445,9 +499,35 @@ select:focus {
 .inventory-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  font-size: 0.88rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inventory-meta__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-surface-subtle);
+  border: 1px solid var(--color-border);
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--color-muted);
+}
+
+.inventory-meta__label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.inventory-meta__value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
 }
 
 .product-card__summary {

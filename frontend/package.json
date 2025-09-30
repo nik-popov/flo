@@ -12,6 +12,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "react-router-dom": "^6.28.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

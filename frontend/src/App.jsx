@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
@@ -389,12 +390,17 @@ const ProductCatalog = ({
           {categories.length > 1 && (
             <div className="filter-section">
               <h4 className="filter-subheading">Category</h4>
-              <div className="category-filters">
+              <div
+                className="filter-chip-group"
+                role="group"
+                aria-label="Filter products by category"
+              >
                 {categories.map((category) => (
                   <button
                     key={category}
                     type="button"
                     className={`filter-chip ${activeCategory === category ? 'active' : ''}`}
+                    aria-pressed={activeCategory === category}
                     onClick={() => onCategoryChange(category)}
                   >
                     {category === 'all' ? 'All items' : category}
@@ -407,20 +413,24 @@ const ProductCatalog = ({
           {brands.length > 1 && (
             <div className="filter-section">
               <h4 className="filter-subheading">Brand</h4>
-              <label className="filter-label" htmlFor="filter-brand">
-                Show items from
-              </label>
-              <select
-                id="filter-brand"
-                value={activeBrand}
-                onChange={(event) => onBrandChange(event.target.value)}
+              <p className="filter-hint">Quickly focus on specific product lines.</p>
+              <div
+                className="filter-chip-group"
+                role="group"
+                aria-label="Filter products by brand"
               >
                 {brands.map((brand) => (
-                  <option key={brand} value={brand}>
+                  <button
+                    key={brand}
+                    type="button"
+                    className={`filter-chip ${activeBrand === brand ? 'active' : ''}`}
+                    aria-pressed={activeBrand === brand}
+                    onClick={() => onBrandChange(brand)}
+                  >
                     {brand === 'all' ? 'All brands' : brand}
-                  </option>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
           )}
 
@@ -505,10 +515,19 @@ const ProductCatalog = ({
                         <p className="muted">{product.description}</p>
                         <div className="inventory-meta">
                           <span className="badge badge--subtle">{product.category}</span>
-                          {product.brand && <span className="muted">Brand: {product.brand}</span>}
-                          <span className="muted">SKU: {product.sku}</span>
-                          <span className="muted">
-                            {product.storeCount} provider{product.storeCount === 1 ? '' : 's'}
+                          {product.brand && (
+                            <span className="badge badge--outline">{product.brand}</span>
+                          )}
+                          <span className="inventory-meta__item">
+                            <span className="inventory-meta__label">SKU</span>
+                            <span className="inventory-meta__value">{product.sku}</span>
+                          </span>
+                          <span className="inventory-meta__item">
+                            <span className="inventory-meta__label">Providers</span>
+                            <span className="inventory-meta__value">
+                              {product.storeCount}{' '}
+                              {product.storeCount === 1 ? 'provider' : 'providers'}
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -812,6 +831,43 @@ const StatusBanner = ({ status }) => {
   return <div className={`status-banner status-banner--${status.type}`}>{status.message}</div>
 }
 
+const CheckoutForm = ({
+  customerName,
+  customerContact,
+  onCustomerNameChange,
+  onCustomerContactChange,
+  onSubmit,
+  submitting,
+}) => (
+  <form className="checkout" onSubmit={onSubmit}>
+    <div className="form-row">
+      <label htmlFor="customer-name">Your name</label>
+      <input
+        id="customer-name"
+        type="text"
+        value={customerName}
+        onChange={(event) => onCustomerNameChange(event.target.value)}
+        placeholder="Alex Shopper"
+        required
+      />
+    </div>
+    <div className="form-row">
+      <label htmlFor="customer-contact">Contact (email or phone)</label>
+      <input
+        id="customer-contact"
+        type="text"
+        value={customerContact}
+        onChange={(event) => onCustomerContactChange(event.target.value)}
+        placeholder="alex@example.com"
+        required
+      />
+    </div>
+    <button type="submit" disabled={submitting}>
+      {submitting ? 'Placing order…' : 'Place order'}
+    </button>
+  </form>
+)
+
 const OrderStatusTimeline = ({ statusFlow = [], currentStatus }) => {
   if (!Array.isArray(statusFlow) || !statusFlow.length) {
     return <p className="muted">Status updates will appear here.</p>
@@ -1024,7 +1080,79 @@ const OrderHistoryPanel = ({
   )
 }
 
+const CatalogPage = ({ catalogProps }) => (
+  <div className="page-content">
+    <section className="products-view">
+      <header className="products-view__header">
+        <h2>Browse products</h2>
+        <p className="muted">
+          Compare pricing and availability across providers, then add the best option to your cart.
+        </p>
+      </header>
+      <ProductCatalog {...catalogProps} />
+    </section>
+  </div>
+)
+
+const OrdersPage = ({ orderHistoryProps }) => (
+  <div className="page-content">
+    <OrderHistoryPanel {...orderHistoryProps} />
+  </div>
+)
+
+const CartPage = ({ cartProviderNote, cartProps, checkoutFormProps }) => (
+  <div className="page-content">
+    <section className="inventory-content__card cart-page">
+      <p className="muted cart-drawer__note">{cartProviderNote}</p>
+      <Cart {...cartProps} />
+      <CheckoutForm {...checkoutFormProps} />
+    </section>
+  </div>
+)
+
+const DemoPage = ({ catalogProps, orderHistoryProps }) => (
+  <div className="content-grid">
+    <section className="products-view">
+      <header className="products-view__header">
+        <h2>Browse products</h2>
+        <p className="muted">
+          Compare pricing and availability across providers, then add the best option to your cart.
+        </p>
+      </header>
+      <ProductCatalog {...catalogProps} />
+    </section>
+    <OrderHistoryPanel {...orderHistoryProps} />
+  </div>
+)
+
+const MarketplaceNavigation = () => {
+  const navItems = [
+    { to: '/catalog', label: 'Catalog' },
+    { to: '/orders', label: 'Orders' },
+    { to: '/cart', label: 'Cart' },
+    { to: '/demo', label: 'All-in-one demo' },
+  ]
+
+  return (
+    <nav className="app-nav" aria-label="Marketplace navigation">
+      {navItems.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.to === '/catalog'}
+          className={({ isActive }) =>
+            `app-nav__link ${isActive ? 'app-nav__link--active' : ''}`.trim()
+          }
+        >
+          {item.label}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
 function App() {
+  const location = useLocation()
   const DEFAULT_ZIP = '10001'
   const DEFAULT_RADIUS = 10
   const DEFAULT_DELIVERY_TIME = '30-60 min'
@@ -1058,6 +1186,12 @@ function App() {
   const [trackedContact, setTrackedContact] = useState('')
   const [selectedOrderId, setSelectedOrderId] = useState('')
   const [orderUpdatingId, setOrderUpdatingId] = useState('')
+
+  useEffect(() => {
+    if (location.pathname === '/cart' && cartOpen) {
+      setCartOpen(false)
+    }
+  }, [location.pathname, cartOpen])
 
   const loadOrderHistory = useCallback(
     async (contactValue) => {
@@ -1619,6 +1753,67 @@ function App() {
     [orderHistory, selectedOrderId],
   )
 
+  const catalogProps = {
+    products: filteredProducts,
+    loading: productsLoading,
+    onAddToCart: addToCart,
+    error: productsError,
+    productFilter,
+    onProductFilterChange: setProductFilter,
+    categories: productCategories,
+    activeCategory: productCategory,
+    onCategoryChange: setProductCategory,
+    brands: productBrands,
+    activeBrand: productBrand,
+    onBrandChange: setProductBrand,
+    priceMin,
+    priceMax,
+    onPriceMinChange: setPriceMin,
+    onPriceMaxChange: setPriceMax,
+    maxDeliveryMinutes,
+    onMaxDeliveryMinutesChange: setMaxDeliveryMinutes,
+    storesLoading,
+    storesError,
+    manualLocationInput,
+    onManualLocationChange: setManualLocationInput,
+    onManualSearch: handleManualSearch,
+    onClearFilters: handleClearFilters,
+    storeOptions: storeFilterOptions,
+    selectedStoreId,
+    onSelectedStoreChange: setSelectedStoreId,
+  }
+
+  const orderHistoryProps = {
+    contactInput: orderLookupContact,
+    onContactInputChange: setOrderLookupContact,
+    onSubmitLookup: handleTrackOrdersSubmit,
+    trackedContact,
+    orders: orderHistory,
+    loading: orderHistoryLoading,
+    error: orderHistoryError,
+    selectedOrder,
+    onSelectOrder: handleSelectOrder,
+    onRefresh: handleRefreshOrderHistory,
+    onAdvanceStatus: handleAdvanceOrderStatus,
+    advancingOrderId: orderUpdatingId,
+  }
+
+  const cartProps = {
+    items: cart,
+    onUpdateQuantity: updateCartQuantity,
+    onRemove: removeCartItem,
+    total: cartTotal,
+  }
+
+  const checkoutFormProps = {
+    customerName,
+    customerContact,
+    onCustomerNameChange: setCustomerName,
+    onCustomerContactChange: setCustomerContact,
+    onSubmit: handleSubmitOrder,
+    submitting: orderSubmitting,
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -1648,64 +1843,35 @@ function App() {
             </div>
           </div>
         </div>
+        <div className="app-header__nav">
+          <MarketplaceNavigation />
+        </div>
       </header>
 
       <StatusBanner status={orderStatus} />
 
-      <div className="content-grid">
-        <section className="products-view">
-          <header className="products-view__header">
-            <h2>Browse products</h2>
-            <p className="muted">
-              Compare pricing and availability across providers, then add the best option to your cart.
-            </p>
-          </header>
-
-          <ProductCatalog
-            products={filteredProducts}
-            loading={productsLoading}
-            onAddToCart={addToCart}
-            error={productsError}
-            productFilter={productFilter}
-            onProductFilterChange={setProductFilter}
-            categories={productCategories}
-            activeCategory={productCategory}
-            onCategoryChange={setProductCategory}
-            brands={productBrands}
-            activeBrand={productBrand}
-            onBrandChange={setProductBrand}
-            priceMin={priceMin}
-            priceMax={priceMax}
-            onPriceMinChange={setPriceMin}
-            onPriceMaxChange={setPriceMax}
-            maxDeliveryMinutes={maxDeliveryMinutes}
-            onMaxDeliveryMinutesChange={setMaxDeliveryMinutes}
-            storesLoading={storesLoading}
-            storesError={storesError}
-            manualLocationInput={manualLocationInput}
-            onManualLocationChange={setManualLocationInput}
-            onManualSearch={handleManualSearch}
-            onClearFilters={handleClearFilters}
-            storeOptions={storeFilterOptions}
-            selectedStoreId={selectedStoreId}
-            onSelectedStoreChange={setSelectedStoreId}
-          />
-        </section>
-        <OrderHistoryPanel
-          contactInput={orderLookupContact}
-          onContactInputChange={setOrderLookupContact}
-          onSubmitLookup={handleTrackOrdersSubmit}
-          trackedContact={trackedContact}
-          orders={orderHistory}
-          loading={orderHistoryLoading}
-          error={orderHistoryError}
-          selectedOrder={selectedOrder}
-          onSelectOrder={handleSelectOrder}
-          onRefresh={handleRefreshOrderHistory}
-          onAdvanceStatus={handleAdvanceOrderStatus}
-          advancingOrderId={orderUpdatingId}
+      <main className="app-main">
+        <Routes>
+        <Route path="/" element={<Navigate to="/catalog" replace />} />
+        <Route path="/catalog" element={<CatalogPage catalogProps={catalogProps} />} />
+        <Route path="/orders" element={<OrdersPage orderHistoryProps={orderHistoryProps} />} />
+        <Route
+          path="/cart"
+          element={
+            <CartPage
+              cartProviderNote={cartProviderNote}
+              cartProps={cartProps}
+              checkoutFormProps={checkoutFormProps}
+            />
+          }
         />
-      </div>
+        <Route
+          path="/demo"
+          element={<DemoPage catalogProps={catalogProps} orderHistoryProps={orderHistoryProps} />}
+        />
+        <Route path="*" element={<Navigate to="/catalog" replace />} />
+        </Routes>
+      </main>
 
       <CartToggle
         count={cartItemCount}
@@ -1716,39 +1882,8 @@ function App() {
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)}>
         <p className="muted cart-drawer__note">{cartProviderNote}</p>
-        <Cart
-          items={cart}
-          onUpdateQuantity={updateCartQuantity}
-          onRemove={removeCartItem}
-          total={cartTotal}
-        />
-        <form className="checkout" onSubmit={handleSubmitOrder}>
-          <div className="form-row">
-            <label htmlFor="customer-name">Your name</label>
-            <input
-              id="customer-name"
-              type="text"
-              value={customerName}
-              onChange={(event) => setCustomerName(event.target.value)}
-              placeholder="Alex Shopper"
-              required
-            />
-          </div>
-          <div className="form-row">
-            <label htmlFor="customer-contact">Contact (email or phone)</label>
-            <input
-              id="customer-contact"
-              type="text"
-              value={customerContact}
-              onChange={(event) => setCustomerContact(event.target.value)}
-              placeholder="alex@example.com"
-              required
-            />
-          </div>
-          <button type="submit" disabled={orderSubmitting}>
-            {orderSubmitting ? 'Placing order…' : 'Place order'}
-          </button>
-        </form>
+        <Cart {...cartProps} />
+        <CheckoutForm {...checkoutFormProps} />
       </CartDrawer>
     </div>
   )

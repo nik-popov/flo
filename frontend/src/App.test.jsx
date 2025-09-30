@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from './App.jsx'
+import { MemoryRouter } from 'react-router-dom'
 
 const createFetchResponse = (body, overrides = {}) => {
   const baseResponse = {
@@ -29,6 +30,13 @@ describe('App', () => {
     cleanup()
     vi.unstubAllGlobals()
   })
+
+  const renderApp = (initialEntries = ['/catalog']) =>
+    render(
+      <MemoryRouter initialEntries={initialEntries}>
+        <App />
+      </MemoryRouter>,
+    )
 
   it('loads stores and aggregated products with provider options', async () => {
     fetch
@@ -87,7 +95,7 @@ describe('App', () => {
         }),
       )
 
-    render(<App />)
+  renderApp()
 
     const locationInput = await screen.findByLabelText(/search by city, zip, or store name/i)
     expect(locationInput).toHaveValue('10001')
@@ -179,7 +187,7 @@ describe('App', () => {
         }),
       )
 
-    render(<App />)
+  renderApp()
 
     const providerSelect = await screen.findByLabelText(/show offers from/i)
     fireEvent.change(providerSelect, { target: { value: 'store-202' } })
@@ -271,12 +279,10 @@ describe('App', () => {
         }),
       )
 
-    render(<App />)
+  renderApp()
 
-    const brandSelect = await screen.findByLabelText(/show items from/i)
-    expect(brandSelect).toBeInTheDocument()
-
-    fireEvent.change(brandSelect, { target: { value: 'TrailMix Co.' } })
+    const trailMixBrandButton = await screen.findByRole('button', { name: /trailmix co\./i })
+    fireEvent.click(trailMixBrandButton)
 
     await waitFor(() => {
       expect(screen.queryByText(/Honeycrisp Apples/i)).not.toBeInTheDocument()
@@ -284,7 +290,8 @@ describe('App', () => {
 
     expect(screen.getByText(/Trail Mix Variety Pack/i)).toBeInTheDocument()
 
-    fireEvent.change(brandSelect, { target: { value: 'all' } })
+    const allBrandsButton = screen.getByRole('button', { name: /all brands/i })
+    fireEvent.click(allBrandsButton)
 
     await waitFor(() => {
       expect(screen.getByText(/Honeycrisp Apples/i)).toBeInTheDocument()
@@ -410,7 +417,7 @@ describe('App', () => {
         }),
       )
 
-    render(<App />)
+  renderApp()
 
     const addToCartButton = await screen.findByRole('button', {
       name: /add honeycrisp apples from sample store to cart/i,
