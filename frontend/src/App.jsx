@@ -268,244 +268,248 @@ const ProductCatalog = ({
   return (
     <div className="inventory inventory--with-sidebar">
       <aside className="inventory-sidebar">
-        <form className="filter-section" onSubmit={onManualSearch}>
-          <h3 className="filter-heading">Location</h3>
-          <label className="filter-label" htmlFor="filter-location">
-            Search by city, zip, or store name
-          </label>
-          <div className="filter-input-row">
-            <input
-              id="filter-location"
-              type="search"
-              placeholder="e.g. 10001 or Downtown"
-              value={manualLocationInput}
-              onChange={(event) => onManualLocationChange(event.target.value)}
-            />
-            <button type="submit">Search</button>
-          </div>
-          {storesLoading && <span className="muted filter-status">Loading providers…</span>}
-          {storesError && <p className="inline-alert">{storesError}</p>}
-        </form>
+        <div className="inventory-sidebar__card">
+          <form className="filter-section" onSubmit={onManualSearch}>
+            <h3 className="filter-heading">Location</h3>
+            <label className="filter-label" htmlFor="filter-location">
+              Search by city, zip, or store name
+            </label>
+            <div className="filter-input-row">
+              <input
+                id="filter-location"
+                type="search"
+                placeholder="e.g. 10001 or Downtown"
+                value={manualLocationInput}
+                onChange={(event) => onManualLocationChange(event.target.value)}
+              />
+              <button type="submit">Search</button>
+            </div>
+            {storesLoading && <span className="muted filter-status">Loading providers…</span>}
+            {storesError && <p className="inline-alert">{storesError}</p>}
+          </form>
 
-        <div className="filter-section">
-          <h3 className="filter-heading">Products</h3>
-          <label className="filter-label" htmlFor="filter-products">
-            Keyword search
-          </label>
-          <input
-            id="filter-products"
-            type="search"
-            placeholder="Search by product name or SKU"
-            value={productFilter}
-            onChange={(event) => onProductFilterChange(event.target.value)}
-          />
-        </div>
-
-        {categories.length > 1 && (
           <div className="filter-section">
-            <h4 className="filter-subheading">Category</h4>
-            <div className="category-filters">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  type="button"
-                  className={`filter-chip ${activeCategory === category ? 'active' : ''}`}
-                  onClick={() => onCategoryChange(category)}
-                >
-                  {category === 'all' ? 'All items' : category}
-                </button>
-              ))}
+            <h3 className="filter-heading">Products</h3>
+            <label className="filter-label" htmlFor="filter-products">
+              Keyword search
+            </label>
+            <input
+              id="filter-products"
+              type="search"
+              placeholder="Search by product name or SKU"
+              value={productFilter}
+              onChange={(event) => onProductFilterChange(event.target.value)}
+            />
+          </div>
+
+          {categories.length > 1 && (
+            <div className="filter-section">
+              <h4 className="filter-subheading">Category</h4>
+              <div className="category-filters">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    className={`filter-chip ${activeCategory === category ? 'active' : ''}`}
+                    onClick={() => onCategoryChange(category)}
+                  >
+                    {category === 'all' ? 'All items' : category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="filter-section">
+            <h4 className="filter-subheading">Price range ($)</h4>
+            <div className="filter-field-group">
+              <label htmlFor="filter-price-min">
+                <span className="filter-label">Min</span>
+                <input
+                  id="filter-price-min"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={priceMin}
+                  onChange={(event) => onPriceMinChange(event.target.value)}
+                />
+              </label>
+              <label htmlFor="filter-price-max">
+                <span className="filter-label">Max</span>
+                <input
+                  id="filter-price-max"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={priceMax}
+                  onChange={(event) => onPriceMaxChange(event.target.value)}
+                />
+              </label>
             </div>
           </div>
-        )}
 
-        <div className="filter-section">
-          <h4 className="filter-subheading">Price range ($)</h4>
-          <div className="filter-field-group">
-            <label htmlFor="filter-price-min">
-              <span className="filter-label">Min</span>
+          <div className="filter-section">
+            <h4 className="filter-subheading">Delivery ETA (minutes)</h4>
+            <label htmlFor="filter-delivery-max">
+              <span className="filter-label">Maximum delivery time</span>
               <input
-                id="filter-price-min"
+                id="filter-delivery-max"
                 type="number"
                 min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={priceMin}
-                onChange={(event) => onPriceMinChange(event.target.value)}
-              />
-            </label>
-            <label htmlFor="filter-price-max">
-              <span className="filter-label">Max</span>
-              <input
-                id="filter-price-max"
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={priceMax}
-                onChange={(event) => onPriceMaxChange(event.target.value)}
+                step="5"
+                placeholder="Any"
+                value={maxDeliveryMinutes}
+                onChange={(event) => onMaxDeliveryMinutesChange(event.target.value)}
               />
             </label>
           </div>
-        </div>
 
-        <div className="filter-section">
-          <h4 className="filter-subheading">Delivery ETA (minutes)</h4>
-          <label htmlFor="filter-delivery-max">
-            <span className="filter-label">Maximum delivery time</span>
-            <input
-              id="filter-delivery-max"
-              type="number"
-              min="0"
-              step="5"
-              placeholder="Any"
-              value={maxDeliveryMinutes}
-              onChange={(event) => onMaxDeliveryMinutesChange(event.target.value)}
-            />
-          </label>
-        </div>
-
-        <div className="filter-actions">
-          <button type="button" className="button-ghost" onClick={onClearFilters}>
-            Clear filters
-          </button>
+          <div className="filter-actions">
+            <button type="button" className="button-ghost" onClick={onClearFilters}>
+              Clear filters
+            </button>
+          </div>
         </div>
       </aside>
       <div className="inventory-content">
-      {error && <p className="inline-alert">{error}</p>}
-      {loading ? (
-        <p className="muted">Loading catalog…</p>
-      ) : !products.length ? (
-        <p className="muted">No items match your filters.</p>
-      ) : (
-        <ul className="inventory-list">
-          {products.map((product) => {
-            const storeOptions = [...(product.stores ?? [])].sort(
-              (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity),
-            )
-            const [primaryOption, ...otherOptions] = storeOptions
-            const priceCeiling = storeOptions.length
-              ? storeOptions[storeOptions.length - 1].price
-              : null
-            const bestPrice = formatCurrencyValue(primaryOption?.price)
-            const ceilingPrice = formatCurrencyValue(priceCeiling)
+        <div className="inventory-content__card">
+          {error && <p className="inline-alert">{error}</p>}
+          {loading ? (
+            <p className="muted">Loading catalog…</p>
+          ) : !products.length ? (
+            <p className="muted">No items match your filters.</p>
+          ) : (
+            <ul className="inventory-list">
+              {products.map((product) => {
+                const storeOptions = [...(product.stores ?? [])].sort(
+                  (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity),
+                )
+                const [primaryOption, ...otherOptions] = storeOptions
+                const priceCeiling = storeOptions.length
+                  ? storeOptions[storeOptions.length - 1].price
+                  : null
+                const bestPrice = formatCurrencyValue(primaryOption?.price)
+                const ceilingPrice = formatCurrencyValue(priceCeiling)
 
-            return (
-              <li key={product.sku} className="inventory-item product-card">
-                <div className="product-card__header">
-                  <div className="product-card__details">
-                    <h3>{product.name}</h3>
-                    <p className="muted">{product.description}</p>
-                    <div className="inventory-meta">
-                      <span className="badge badge--subtle">{product.category}</span>
-                      <span className="muted">SKU: {product.sku}</span>
-                      <span className="muted">
-                        {product.storeCount} provider{product.storeCount === 1 ? '' : 's'}
-                      </span>
-                    </div>
-                  </div>
-                  {primaryOption && (
-                    <div className="product-card__summary">
-                      <span className="product-card__summary-label">Best price</span>
-                      <span className="product-card__summary-price">
-                        {bestPrice ? (
-                          <>
-                            ${bestPrice}
-                            {product.unit ? (
-                              <span className="product-card__summary-unit"> / {product.unit}</span>
-                            ) : null}
-                          </>
-                        ) : (
-                          'Price unavailable'
-                        )}
-                      </span>
-                      {bestPrice && ceilingPrice && ceilingPrice !== bestPrice && (
-                        <span className="product-card__summary-meta">Up to ${ceilingPrice}</span>
-                      )}
-                      <span className="product-card__summary-meta">
-                        {product.storeCount} offer{product.storeCount === 1 ? '' : 's'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {primaryOption && (
-                  <div className="product-card__spotlight">
-                    <div className="provider-option provider-option--primary">
-                      <div className="provider-info">
-                        <div className="provider-option__header">
-                          <strong>{primaryOption.storeName}</strong>
-                          <span className="provider-badge">Best value</span>
+                return (
+                  <li key={product.sku} className="inventory-item product-card">
+                    <div className="product-card__header">
+                      <div className="product-card__details">
+                        <h3>{product.name}</h3>
+                        <p className="muted">{product.description}</p>
+                        <div className="inventory-meta">
+                          <span className="badge badge--subtle">{product.category}</span>
+                          <span className="muted">SKU: {product.sku}</span>
+                          <span className="muted">
+                            {product.storeCount} provider{product.storeCount === 1 ? '' : 's'}
+                          </span>
                         </div>
-                        <p className="provider-price">
-                          {bestPrice ? `$${bestPrice}` : 'Price unavailable'}
-                          {primaryOption.quantityAvailable != null && (
-                            <span className="provider-availability">
-                              {' '}
-                              · {primaryOption.quantityAvailable} available
-                            </span>
-                          )}
-                        </p>
-                        {primaryOption.deliveryEta && (
-                          <span className="provider-eta">ETA {primaryOption.deliveryEta}</span>
-                        )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => onAddToCart(product, primaryOption)}
-                        aria-label={`Add ${product.name} from ${primaryOption.storeName} to cart`}
-                      >
-                        Add to cart
-                      </button>
+                      {primaryOption && (
+                        <div className="product-card__summary">
+                          <span className="product-card__summary-label">Best price</span>
+                          <span className="product-card__summary-price">
+                            {bestPrice ? (
+                              <>
+                                ${bestPrice}
+                                {product.unit ? (
+                                  <span className="product-card__summary-unit"> / {product.unit}</span>
+                                ) : null}
+                              </>
+                            ) : (
+                              'Price unavailable'
+                            )}
+                          </span>
+                          {bestPrice && ceilingPrice && ceilingPrice !== bestPrice && (
+                            <span className="product-card__summary-meta">Up to ${ceilingPrice}</span>
+                          )}
+                          <span className="product-card__summary-meta">
+                            {product.storeCount} offer{product.storeCount === 1 ? '' : 's'}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
 
-                {otherOptions.length > 0 && (
-                  <div className="product-card__providers">
-                    <p className="price-summary">
-                      Compare {otherOptions.length} more offer{otherOptions.length === 1 ? '' : 's'}
-                    </p>
-                    <ul className="provider-options">
-                      {otherOptions.map((store) => {
-                        const formattedPrice = formatCurrencyValue(store.price)
-                        return (
-                          <li key={store.storeId} className="provider-option">
-                            <div className="provider-info">
-                              <div className="provider-option__header">
-                                <strong>{store.storeName}</strong>
-                              </div>
-                              <p className="provider-price">
-                                {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
-                                {store.quantityAvailable != null && (
-                                  <span className="provider-availability">
-                                    {' '}
-                                    · {store.quantityAvailable} available
-                                  </span>
-                                )}
-                              </p>
-                              {store.deliveryEta && (
-                                <span className="provider-eta">ETA {store.deliveryEta}</span>
-                              )}
+                    {primaryOption && (
+                      <div className="product-card__spotlight">
+                        <div className="provider-option provider-option--primary">
+                          <div className="provider-info">
+                            <div className="provider-option__header">
+                              <strong>{primaryOption.storeName}</strong>
+                              <span className="provider-badge">Best value</span>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => onAddToCart(product, store)}
-                              aria-label={`Add ${product.name} from ${store.storeName} to cart`}
-                            >
-                              Add to cart
-                            </button>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </div>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      )}
+                            <p className="provider-price">
+                              {bestPrice ? `$${bestPrice}` : 'Price unavailable'}
+                              {primaryOption.quantityAvailable != null && (
+                                <span className="provider-availability">
+                                  {' '}
+                                  · {primaryOption.quantityAvailable} available
+                                </span>
+                              )}
+                            </p>
+                            {primaryOption.deliveryEta && (
+                              <span className="provider-eta">ETA {primaryOption.deliveryEta}</span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onAddToCart(product, primaryOption)}
+                            aria-label={`Add ${product.name} from ${primaryOption.storeName} to cart`}
+                          >
+                            Add to cart
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {otherOptions.length > 0 && (
+                      <div className="product-card__providers">
+                        <p className="price-summary">
+                          Compare {otherOptions.length} more offer{otherOptions.length === 1 ? '' : 's'}
+                        </p>
+                        <ul className="provider-options">
+                          {otherOptions.map((store) => {
+                            const formattedPrice = formatCurrencyValue(store.price)
+                            return (
+                              <li key={store.storeId} className="provider-option">
+                                <div className="provider-info">
+                                  <div className="provider-option__header">
+                                    <strong>{store.storeName}</strong>
+                                  </div>
+                                  <p className="provider-price">
+                                    {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
+                                    {store.quantityAvailable != null && (
+                                      <span className="provider-availability">
+                                        {' '}
+                                        · {store.quantityAvailable} available
+                                      </span>
+                                    )}
+                                  </p>
+                                  {store.deliveryEta && (
+                                    <span className="provider-eta">ETA {store.deliveryEta}</span>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => onAddToCart(product, store)}
+                                  aria-label={`Add ${product.name} from ${store.storeName} to cart`}
+                                >
+                                  Add to cart
+                                </button>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -560,73 +564,104 @@ const Cart = ({ items, onUpdateQuantity, onRemove, total }) => {
   }
 
   const formattedTotal = formatCurrencyValue(total)
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
+
+  const storeGroups = []
+  const storeMap = new Map()
+
+  items.forEach((item) => {
+    if (!storeMap.has(item.storeId)) {
+      const group = {
+        storeId: item.storeId,
+        storeName: item.storeName,
+        items: [],
+        subtotal: 0,
+      }
+      storeMap.set(item.storeId, group)
+      storeGroups.push(group)
+    }
+
+    const group = storeMap.get(item.storeId)
+    group.items.push(item)
+    group.subtotal += item.price * item.quantity
+  })
 
   return (
     <div className="cart cart--panel">
       <header className="cart__header">
         <h2>Items in your cart</h2>
         <span className="cart__count">
-          {items.length} item{items.length === 1 ? '' : 's'} · ${formattedTotal}
+          {totalQuantity} item{totalQuantity === 1 ? '' : 's'}
+          {formattedTotal ? ` · $${formattedTotal}` : ''}
         </span>
       </header>
       <ul className="cart-list">
-        {items.map((item) => {
-          const formattedPrice = formatCurrencyValue(item.price)
-          const formattedSubtotal = formatCurrencyValue(item.price * item.quantity)
-
+        {storeGroups.map((store) => {
+          const storeTotal = formatCurrencyValue(store.subtotal)
           return (
-            <li key={`${item.sku}-${item.storeId}`} className="cart-item">
-              <div
-                className={`provider-option cart-provider-option ${getStoreAccentClass(item.storeId)}`}
-              >
-                <div className="provider-info cart-provider-info">
-                  <div className="provider-option__header cart-item__header">
-                    <strong>{item.name}</strong>
-                    <span className="cart-item__store-pill">{item.storeName}</span>
-                  </div>
-                  <p className="provider-price">
-                    {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
-                    <span className="provider-availability">
-                      {' '}
-                      · {item.quantityAvailable} in stock
-                    </span>
-                  </p>
-                  <div className="cart-item__meta">
-                    <span className="badge badge--subtle">SKU {item.sku}</span>
-                    <span className="cart-item__quantity">Qty {item.quantity}</span>
-                    {formattedSubtotal ? (
-                      <span className="cart-item__subtotal">${formattedSubtotal} total</span>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="cart-actions">
-                  <label
-                    className="cart-actions__label"
-                    htmlFor={`quantity-${item.sku}-${item.storeId}`}
-                  >
-                    Qty
-                  </label>
-                  <div className="cart-actions__controls">
-                    <input
-                      id={`quantity-${item.sku}-${item.storeId}`}
-                      type="number"
-                      min="1"
-                      max={item.quantityAvailable}
-                      value={item.quantity}
-                      onChange={(event) =>
-                        onUpdateQuantity(item.sku, item.storeId, Number(event.target.value))
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="link cart-actions__remove"
-                      onClick={() => onRemove(item.sku, item.storeId)}
-                    >
-                      Remove
-                    </button>
-                  </div>
+            <li key={store.storeId} className="cart-store">
+              <div className={`cart-store__header ${getStoreAccentClass(store.storeId)}`}>
+                <div className="cart-store__title">
+                  <h3>{store.storeName}</h3>
+                  <span className="cart-store__meta">
+                    {store.items.length} item{store.items.length === 1 ? '' : 's'}
+                    {storeTotal ? ` · $${storeTotal}` : ''}
+                  </span>
                 </div>
               </div>
+              <ul className="cart-store__items">
+                {store.items.map((item) => {
+                  const formattedPrice = formatCurrencyValue(item.price)
+                  const formattedSubtotal = formatCurrencyValue(item.price * item.quantity)
+
+                  return (
+                    <li key={`${item.sku}-${item.storeId}`} className="cart-item">
+                      <div className={`cart-line ${getStoreAccentClass(store.storeId)}`}>
+                        <div className="cart-line__details">
+                          <div className="cart-line__title">
+                            <strong>{item.name}</strong>
+                            <span className="cart-line__price">
+                              {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
+                            </span>
+                          </div>
+                          <div className="cart-line__meta">
+                            <span className="badge badge--subtle">SKU {item.sku}</span>
+                            {item.quantityAvailable != null ? (
+                              <span className="cart-line__stock">{item.quantityAvailable} in stock</span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="cart-line__actions">
+                          <div className="cart-line__qty">
+                            <label htmlFor={`quantity-${item.sku}-${item.storeId}`}>Qty</label>
+                            <input
+                              id={`quantity-${item.sku}-${item.storeId}`}
+                              type="number"
+                              min="1"
+                              max={item.quantityAvailable}
+                              value={item.quantity}
+                              onChange={(event) =>
+                                onUpdateQuantity(item.sku, item.storeId, Number(event.target.value))
+                              }
+                            />
+                          </div>
+                          {formattedSubtotal ? (
+                            <span className="cart-line__subtotal">${formattedSubtotal} total</span>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="link cart-line__remove"
+                            onClick={() => onRemove(item.sku, item.storeId)}
+                            aria-label={`Remove ${item.name} from ${store.storeName}`}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
             </li>
           )
         })}
@@ -1029,39 +1064,37 @@ function App() {
       <StatusBanner status={orderStatus} />
 
       <div className="content-grid">
-        <section className="panel panel--products">
-          <header className="panel-header">
+        <section className="products-view">
+          <header className="products-view__header">
             <h2>Browse products</h2>
             <p className="muted">
               Compare pricing and availability across providers, then add the best option to your cart.
             </p>
           </header>
 
-          <div className="panel-body inventory-body">
-            <ProductCatalog
-              products={filteredProducts}
-              loading={productsLoading}
-              onAddToCart={addToCart}
-              error={productsError}
-              productFilter={productFilter}
-              onProductFilterChange={setProductFilter}
-              categories={productCategories}
-              activeCategory={productCategory}
-              onCategoryChange={setProductCategory}
-              priceMin={priceMin}
-              priceMax={priceMax}
-              onPriceMinChange={setPriceMin}
-              onPriceMaxChange={setPriceMax}
-              maxDeliveryMinutes={maxDeliveryMinutes}
-              onMaxDeliveryMinutesChange={setMaxDeliveryMinutes}
-              storesLoading={storesLoading}
-              storesError={storesError}
-              manualLocationInput={manualLocationInput}
-              onManualLocationChange={setManualLocationInput}
-              onManualSearch={handleManualSearch}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
+          <ProductCatalog
+            products={filteredProducts}
+            loading={productsLoading}
+            onAddToCart={addToCart}
+            error={productsError}
+            productFilter={productFilter}
+            onProductFilterChange={setProductFilter}
+            categories={productCategories}
+            activeCategory={productCategory}
+            onCategoryChange={setProductCategory}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            onPriceMinChange={setPriceMin}
+            onPriceMaxChange={setPriceMax}
+            maxDeliveryMinutes={maxDeliveryMinutes}
+            onMaxDeliveryMinutesChange={setMaxDeliveryMinutes}
+            storesLoading={storesLoading}
+            storesError={storesError}
+            manualLocationInput={manualLocationInput}
+            onManualLocationChange={setManualLocationInput}
+            onManualSearch={handleManualSearch}
+            onClearFilters={handleClearFilters}
+          />
         </section>
       </div>
 
