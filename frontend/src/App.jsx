@@ -94,6 +94,7 @@ const FALLBACK_INVENTORY = {
       name: 'Honeycrisp Apples',
       description: 'Fresh locally sourced apples.',
       category: 'Produce',
+      brand: 'Orchard Fresh',
       price: 2.39,
       unit: 'lb',
       quantityAvailable: 140,
@@ -103,6 +104,7 @@ const FALLBACK_INVENTORY = {
       name: 'Organic Whole Milk',
       description: '1 gallon organic whole milk.',
       category: 'Dairy',
+      brand: 'Green Valley Dairy',
       price: 5.29,
       unit: 'gallon',
       quantityAvailable: 45,
@@ -112,6 +114,7 @@ const FALLBACK_INVENTORY = {
       name: 'Sourdough Bread',
       description: 'Artisan sourdough loaf baked daily.',
       category: 'Bakery',
+      brand: 'Sunrise Baking Co.',
       price: 4.5,
       unit: 'each',
       quantityAvailable: 30,
@@ -121,6 +124,7 @@ const FALLBACK_INVENTORY = {
       name: 'Trail Mix Variety Pack',
       description: 'Assorted nuts, dried fruit, and chocolate.',
       category: 'Snacks',
+      brand: 'TrailMix Co.',
       price: 7.99,
       unit: 'pack',
       quantityAvailable: 85,
@@ -132,6 +136,7 @@ const FALLBACK_INVENTORY = {
       name: 'Honeycrisp Apples',
       description: 'Fresh locally sourced apples.',
       category: 'Produce',
+      brand: 'Orchard Fresh',
       price: 2.54,
       unit: 'lb',
       quantityAvailable: 100,
@@ -141,6 +146,7 @@ const FALLBACK_INVENTORY = {
       name: 'Mixed Salad Greens',
       description: 'A mix of spinach, arugula, and kale.',
       category: 'Produce',
+      brand: 'Leafy Greens Collective',
       price: 4.19,
       unit: 'bag',
       quantityAvailable: 75,
@@ -150,6 +156,7 @@ const FALLBACK_INVENTORY = {
       name: 'Free-Range Eggs',
       description: 'One dozen large brown eggs.',
       category: 'Dairy',
+      brand: 'Happy Hens Farm',
       price: 4.75,
       unit: 'dozen',
       quantityAvailable: 90,
@@ -159,6 +166,7 @@ const FALLBACK_INVENTORY = {
       name: 'Trail Mix Variety Pack',
       description: 'Assorted nuts, dried fruit, and chocolate.',
       category: 'Snacks',
+      brand: 'TrailMix Co.',
       price: 8.49,
       unit: 'pack',
       quantityAvailable: 95,
@@ -170,6 +178,7 @@ const FALLBACK_INVENTORY = {
       name: 'Honeycrisp Apples',
       description: 'Fresh locally sourced apples.',
       category: 'Produce',
+      brand: 'Orchard Fresh',
       price: 2.62,
       unit: 'lb',
       quantityAvailable: 110,
@@ -179,6 +188,7 @@ const FALLBACK_INVENTORY = {
       name: 'Mixed Salad Greens',
       description: 'A mix of spinach, arugula, and kale.',
       category: 'Produce',
+      brand: 'Leafy Greens Collective',
       price: 3.95,
       unit: 'bag',
       quantityAvailable: 120,
@@ -188,6 +198,7 @@ const FALLBACK_INVENTORY = {
       name: 'Cold Brew Coffee Concentrate',
       description: 'Ready-to-mix cold brew concentrate.',
       category: 'Beverages',
+      brand: 'BrewMaster Roasters',
       price: 12.99,
       unit: '32oz',
       quantityAvailable: 55,
@@ -197,6 +208,7 @@ const FALLBACK_INVENTORY = {
       name: 'Eco-Friendly Dish Soap',
       description: 'Biodegradable citrus-scented dish soap.',
       category: 'Household',
+      brand: 'EcoShine Home',
       price: 3.99,
       unit: '16oz',
       quantityAvailable: 75,
@@ -256,12 +268,16 @@ const aggregateProducts = (stores, inventoryLookup) => {
           name: item.name,
           description: item.description,
           category: item.category,
+          brand: item.brand || null,
           unit: item.unit,
           stores: [],
         })
       }
 
       const entry = catalog.get(item.sku)
+      if (!entry.brand && item.brand) {
+        entry.brand = item.brand
+      }
       entry.stores.push({
         storeId: store.id,
         storeName: store.name,
@@ -294,6 +310,9 @@ const ProductCatalog = ({
   categories,
   activeCategory,
   onCategoryChange,
+  brands = ['all'],
+  activeBrand = 'all',
+  onBrandChange = () => {},
   priceMin,
   priceMax,
   onPriceMinChange,
@@ -385,6 +404,26 @@ const ProductCatalog = ({
             </div>
           )}
 
+          {brands.length > 1 && (
+            <div className="filter-section">
+              <h4 className="filter-subheading">Brand</h4>
+              <label className="filter-label" htmlFor="filter-brand">
+                Show items from
+              </label>
+              <select
+                id="filter-brand"
+                value={activeBrand}
+                onChange={(event) => onBrandChange(event.target.value)}
+              >
+                {brands.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand === 'all' ? 'All brands' : brand}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="filter-section">
             <h4 className="filter-subheading">Price range ($)</h4>
             <div className="filter-field-group">
@@ -466,6 +505,7 @@ const ProductCatalog = ({
                         <p className="muted">{product.description}</p>
                         <div className="inventory-meta">
                           <span className="badge badge--subtle">{product.category}</span>
+                          {product.brand && <span className="muted">Brand: {product.brand}</span>}
                           <span className="muted">SKU: {product.sku}</span>
                           <span className="muted">
                             {product.storeCount} provider{product.storeCount === 1 ? '' : 's'}
@@ -1000,6 +1040,7 @@ function App() {
   const [productsError, setProductsError] = useState('')
   const [productFilter, setProductFilter] = useState('')
   const [productCategory, setProductCategory] = useState('all')
+  const [productBrand, setProductBrand] = useState('all')
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [maxDeliveryMinutes, setMaxDeliveryMinutes] = useState('')
@@ -1221,6 +1262,23 @@ function App() {
     return ['all', ...categories]
   }, [products])
 
+  const productBrands = useMemo(() => {
+    const unique = new Set()
+    products.forEach((product) => {
+      if (product.brand) {
+        unique.add(product.brand)
+      }
+    })
+    const brands = Array.from(unique).sort((a, b) => a.localeCompare(b))
+    return ['all', ...brands]
+  }, [products])
+
+  useEffect(() => {
+    if (!productBrands.includes(productBrand)) {
+      setProductBrand('all')
+    }
+  }, [productBrands, productBrand])
+
   const visibleStores = useMemo(() => {
     if (maxDeliveryMinutes === '') return stores
     const maxMinutes = Number(maxDeliveryMinutes)
@@ -1264,6 +1322,14 @@ function App() {
       result = result.filter((product) => product.category === productCategory)
     }
 
+    if (productBrand !== 'all') {
+      const brandQuery = productBrand.toLowerCase()
+      result = result.filter((product) => {
+        if (!product.brand) return false
+        return product.brand.toLowerCase() === brandQuery
+      })
+    }
+
     const min = priceMin === '' ? null : Number(priceMin)
     const max = priceMax === '' ? null : Number(priceMax)
     const hasPriceFilter = (min != null && !Number.isNaN(min)) || (max != null && !Number.isNaN(max))
@@ -1305,13 +1371,14 @@ function App() {
     if (!query) return result
 
     return result.filter((product) =>
-      [product.name, product.description, product.category, product.sku]
+      [product.name, product.description, product.category, product.brand, product.sku]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(query)),
     )
   }, [
     products,
     productCategory,
+    productBrand,
     productFilter,
     priceMin,
     priceMax,
@@ -1323,6 +1390,7 @@ function App() {
   const handleClearFilters = () => {
     setProductFilter('')
     setProductCategory('all')
+    setProductBrand('all')
     setPriceMin('')
     setPriceMax('')
     setMaxDeliveryMinutes('')
@@ -1603,6 +1671,9 @@ function App() {
             categories={productCategories}
             activeCategory={productCategory}
             onCategoryChange={setProductCategory}
+            brands={productBrands}
+            activeBrand={productBrand}
+            onBrandChange={setProductBrand}
             priceMin={priceMin}
             priceMax={priceMax}
             onPriceMinChange={setPriceMin}

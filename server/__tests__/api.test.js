@@ -48,10 +48,27 @@ describe('Store API', () => {
     const response = await request(app).get('/api/products');
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body.products)).toBe(true);
+    expect(Array.isArray(response.body.brands)).toBe(true);
     const apples = response.body.products.find((product) => product.sku === 'APL-001');
     expect(apples).toBeTruthy();
     expect(apples.storeCount).toBeGreaterThan(1);
     expect(apples.stores.every((option) => option.storeId)).toBe(true);
+    expect(apples.brand).toBe('Orchard Fresh');
+    expect(response.body.brands).toContain('Orchard Fresh');
+  });
+
+  it('should filter products by brand', async () => {
+    const response = await request(app)
+      .get('/api/products')
+      .query({ brand: 'TrailMix Co.' });
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body.products)).toBe(true);
+    expect(response.body.products.length).toBeGreaterThan(0);
+    response.body.products.forEach((product) => {
+      expect(product.brand).toBe('TrailMix Co.');
+    });
+    expect(response.body.brands).toContain('TrailMix Co.');
   });
 
   it('rejects invalid orders', async () => {

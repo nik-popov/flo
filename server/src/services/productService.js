@@ -14,6 +14,12 @@ const matchesCategory = (item, category) => {
   return item.category && item.category.toLowerCase() === category.toLowerCase();
 };
 
+const matchesBrand = (item, brand) => {
+  if (!brand || brand === 'all') return true;
+  if (!item.brand) return false;
+  return item.brand.toLowerCase() === brand.toLowerCase();
+};
+
 const upsertProduct = (catalogMap, store, item) => {
   if (!catalogMap.has(item.sku)) {
     catalogMap.set(item.sku, {
@@ -22,11 +28,15 @@ const upsertProduct = (catalogMap, store, item) => {
       description: item.description,
       category: item.category,
       unit: item.unit,
+      brand: item.brand || null,
       stores: [],
     });
   }
 
   const product = catalogMap.get(item.sku);
+  if (!product.brand && item.brand) {
+    product.brand = item.brand;
+  }
   product.stores.push({
     storeId: store.id,
     storeName: store.name,
@@ -62,7 +72,7 @@ const sortProducts = (products, sortBy = 'name') => {
 };
 
 const getProductsCatalog = (allStores, location, options = {}) => {
-  const { radius = 10, storeQuery, productQuery, category, sortBy = 'name' } = options;
+  const { radius = 10, storeQuery, productQuery, category, brand, sortBy = 'name' } = options;
 
   const nearbyStores = getStoresNearby(allStores, location, {
     radius,
@@ -76,6 +86,7 @@ const getProductsCatalog = (allStores, location, options = {}) => {
     inventory
       .filter((item) => matchesProductQuery(item, productQuery))
       .filter((item) => matchesCategory(item, category))
+      .filter((item) => matchesBrand(item, brand))
       .forEach((item) => upsertProduct(catalogMap, store, item));
   });
 
@@ -84,10 +95,14 @@ const getProductsCatalog = (allStores, location, options = {}) => {
   const categories = Array.from(
     new Set(sorted.map((product) => product.category).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b));
+  const brands = Array.from(new Set(sorted.map((product) => product.brand).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
 
   return {
     products: sorted,
     categories,
+    brands,
     availableStores: nearbyStores,
   };
 };

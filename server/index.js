@@ -45,7 +45,7 @@ app.get('/api/stores', (req, res) => {
 });
 
 app.get('/api/products', (req, res) => {
-  const { lat, lng, radius = 10, q, category, sort, store: storeQuery } = req.query;
+  const { lat, lng, radius = 10, q, category, brand, sort, store: storeQuery } = req.query;
 
   const location =
     lat && lng
@@ -60,6 +60,7 @@ app.get('/api/products', (req, res) => {
     storeQuery,
     productQuery: q,
     category,
+    brand,
     sortBy: sort,
   });
 

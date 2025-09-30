@@ -62,6 +62,7 @@ describe('App', () => {
               name: 'Honeycrisp Apples',
               description: 'Fresh apples',
               category: 'Produce',
+              brand: 'Orchard Fresh',
               storeCount: 2,
               lowestPrice: 2.49,
               highestPrice: 2.79,
@@ -153,6 +154,7 @@ describe('App', () => {
               name: 'Honeycrisp Apples',
               description: 'Fresh apples',
               category: 'Produce',
+              brand: 'Orchard Fresh',
               storeCount: 2,
               lowestPrice: 2.49,
               highestPrice: 2.79,
@@ -208,6 +210,88 @@ describe('App', () => {
     })
   })
 
+  it('filters products by selected brand', async () => {
+    fetch
+      .mockImplementationOnce(() =>
+        createFetchResponse({
+          stores: [
+            {
+              id: 'store-101',
+              name: 'Sample Store',
+              address: '123 Elm Street',
+              hours: '8-5',
+              distanceKm: 1.2,
+              deliveryEta: '45-60 min',
+            },
+          ],
+        }),
+      )
+      .mockImplementationOnce(() =>
+        createFetchResponse({
+          products: [
+            {
+              sku: 'APL-001',
+              name: 'Honeycrisp Apples',
+              description: 'Fresh apples',
+              category: 'Produce',
+              brand: 'Orchard Fresh',
+              storeCount: 1,
+              lowestPrice: 2.49,
+              highestPrice: 2.49,
+              stores: [
+                {
+                  storeId: 'store-101',
+                  storeName: 'Sample Store',
+                  price: 2.49,
+                  quantityAvailable: 20,
+                  deliveryEta: '45-60 min',
+                },
+              ],
+            },
+            {
+              sku: 'SNK-021',
+              name: 'Trail Mix Variety Pack',
+              description: 'Trail mix',
+              category: 'Snacks',
+              brand: 'TrailMix Co.',
+              storeCount: 1,
+              lowestPrice: 7.99,
+              highestPrice: 7.99,
+              stores: [
+                {
+                  storeId: 'store-101',
+                  storeName: 'Sample Store',
+                  price: 7.99,
+                  quantityAvailable: 15,
+                  deliveryEta: '45-60 min',
+                },
+              ],
+            },
+          ],
+        }),
+      )
+
+    render(<App />)
+
+    const brandSelect = await screen.findByLabelText(/show items from/i)
+    expect(brandSelect).toBeInTheDocument()
+
+    fireEvent.change(brandSelect, { target: { value: 'TrailMix Co.' } })
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Honeycrisp Apples/i)).not.toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/Trail Mix Variety Pack/i)).toBeInTheDocument()
+
+    fireEvent.change(brandSelect, { target: { value: 'all' } })
+
+    await waitFor(() => {
+      expect(screen.getByText(/Honeycrisp Apples/i)).toBeInTheDocument()
+      expect(screen.getByText(/Trail Mix Variety Pack/i)).toBeInTheDocument()
+    })
+  })
+
   it('submits the cart and displays order confirmation details', async () => {
     fetch
       .mockImplementationOnce(() =>
@@ -232,6 +316,7 @@ describe('App', () => {
               name: 'Honeycrisp Apples',
               description: 'Fresh apples',
               category: 'Produce',
+              brand: 'Orchard Fresh',
               storeCount: 1,
               lowestPrice: 2.49,
               highestPrice: 2.49,
