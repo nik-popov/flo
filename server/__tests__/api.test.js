@@ -13,6 +13,12 @@ describe('Store API', () => {
     expect(response.body).toEqual({ status: 'ok' });
   });
 
+  it('should respond on the root path', async () => {
+    const response = await request(app).get('/');
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ service: 'Flo API', status: 'ok' });
+  });
+
   it('should list stores without location filter', async () => {
     const response = await request(app).get('/api/stores');
     expect(response.status).toBe(200);
