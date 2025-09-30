@@ -9,7 +9,7 @@ RUN npm install
 COPY . ./
 
 # Allow the API base URL to be customized at build time
-ARG VITE_API_BASE_URL="https://flo-363950012349.us-east4.run.app/api"
+ARG VITE_API_BASE_URL="https://flo-363950012349.us-east4.run.app"
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 RUN npm run build
