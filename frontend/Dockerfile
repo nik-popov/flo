@@ -23,6 +23,9 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Replace the default Nginx site configuration so we listen on port 8080
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]

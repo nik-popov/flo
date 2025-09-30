@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import './App.css'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE_URL =
+  (typeof window !== 'undefined' && window.__FLO_CONFIG?.apiBaseUrl) ||
+  import.meta.env.VITE_API_BASE_URL ||
+  ''
 
 const fetchJson = async (path, options = {}) => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
