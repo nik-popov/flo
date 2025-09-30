@@ -66,14 +66,26 @@ npm run test -- --run
 ### Run the API in Docker
 
 ```bash
-# Build the image (runs from repo root)
-docker build -t flo-api .
+# Build the image using the Dockerfile inside server/
+docker build -t flo-api ./server
 
 # Start the container on port 4000
 docker run --rm -p 4000:4000 flo-api
 ```
 
 The container only runs the Express API. The frontend remains a Vite app that you can run locally with `npm run dev` while pointing to the containerized backend.
+
+### Run the frontend in Docker (port 8080)
+
+```bash
+# Build the static assets and image (runs from repo root)
+docker build -t flo-frontend ./frontend
+
+# Run the container on http://localhost:8080
+docker run --rm -p 8080:8080 flo-frontend
+```
+
+By default the frontend assumes the API is reachable via the same origin at `/api`. When building the image you can point to a remote API by passing `--build-arg VITE_API_BASE_URL="https://your-api.example.com"`.
 
 ## Project structure
 
