@@ -63,6 +63,18 @@ cd frontend
 npm run test -- --run
 ```
 
+### Run the API in Docker
+
+```bash
+# Build the image (runs from repo root)
+docker build -t flo-api .
+
+# Start the container on port 4000
+docker run --rm -p 4000:4000 flo-api
+```
+
+The container only runs the Express API. The frontend remains a Vite app that you can run locally with `npm run dev` while pointing to the containerized backend.
+
 ## Project structure
 
 ```
