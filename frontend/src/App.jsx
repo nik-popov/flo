@@ -188,6 +188,20 @@ const parseDeliveryEtaMinutes = (etaText) => {
   return Number.isFinite(minutes) ? minutes : null
 }
 
+const formatCurrencyValue = (value) =>
+  typeof value === 'number' && Number.isFinite(value) ? value.toFixed(2) : null
+
+const STORE_ACCENT_CLASSES = ['cart-accent-blue', 'cart-accent-green', 'cart-accent-orange', 'cart-accent-purple']
+
+const getStoreAccentClass = (storeId) => {
+  if (!storeId) return STORE_ACCENT_CLASSES[0]
+  const charSum = storeId
+    .split('')
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0)
+  const index = charSum % STORE_ACCENT_CLASSES.length
+  return STORE_ACCENT_CLASSES[index]
+}
+
 const aggregateProducts = (stores, inventoryLookup) => {
   const catalog = new Map()
 
@@ -365,44 +379,131 @@ const ProductCatalog = ({
         <p className="muted">No items match your filters.</p>
       ) : (
         <ul className="inventory-list">
-          {products.map((product) => (
-            <li key={product.sku} className="inventory-item product-card">
-              <div className="product-card__details">
-                <h3>{product.name}</h3>
-                <p className="muted">{product.description}</p>
-                <div className="inventory-meta">
-                  <span className="badge badge--subtle">{product.category}</span>
-                  <span className="muted">SKU: {product.sku}</span>
-                  <span className="muted">
-                    {product.storeCount} provider{product.storeCount === 1 ? '' : 's'}
-                  </span>
+          {products.map((product) => {
+            const storeOptions = [...(product.stores ?? [])].sort(
+              (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity),
+            )
+            const [primaryOption, ...otherOptions] = storeOptions
+            const priceCeiling = storeOptions.length
+              ? storeOptions[storeOptions.length - 1].price
+              : null
+            const bestPrice = formatCurrencyValue(primaryOption?.price)
+            const ceilingPrice = formatCurrencyValue(priceCeiling)
+
+            return (
+              <li key={product.sku} className="inventory-item product-card">
+                <div className="product-card__header">
+                  <div className="product-card__details">
+                    <h3>{product.name}</h3>
+                    <p className="muted">{product.description}</p>
+                    <div className="inventory-meta">
+                      <span className="badge badge--subtle">{product.category}</span>
+                      <span className="muted">SKU: {product.sku}</span>
+                      <span className="muted">
+                        {product.storeCount} provider{product.storeCount === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </div>
+                  {primaryOption && (
+                    <div className="product-card__summary">
+                      <span className="product-card__summary-label">Best price</span>
+                      <span className="product-card__summary-price">
+                        {bestPrice ? (
+                          <>
+                            ${bestPrice}
+                            {product.unit ? (
+                              <span className="product-card__summary-unit"> / {product.unit}</span>
+                            ) : null}
+                          </>
+                        ) : (
+                          'Price unavailable'
+                        )}
+                      </span>
+                      {bestPrice && ceilingPrice && ceilingPrice !== bestPrice && (
+                        <span className="product-card__summary-meta">Up to ${ceilingPrice}</span>
+                      )}
+                      <span className="product-card__summary-meta">
+                        {product.storeCount} offer{product.storeCount === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="product-card__providers">
-                <p className="muted price-summary">
-                  ${product.lowestPrice.toFixed(2)} – ${product.highestPrice.toFixed(2)}
-                </p>
-                <ul className="provider-options">
-                  {product.stores.map((store) => (
-                    <li key={store.storeId} className="provider-option">
+
+                {primaryOption && (
+                  <div className="product-card__spotlight">
+                    <div className="provider-option provider-option--primary">
                       <div className="provider-info">
-                        <strong>{store.storeName}</strong>
-                        <span className="muted">
-                          ${store.price.toFixed(2)} · {store.quantityAvailable} available
-                        </span>
-                        {store.deliveryEta && (
-                          <span className="provider-eta">ETA {store.deliveryEta}</span>
+                        <div className="provider-option__header">
+                          <strong>{primaryOption.storeName}</strong>
+                          <span className="provider-badge">Best value</span>
+                        </div>
+                        <p className="provider-price">
+                          {bestPrice ? `$${bestPrice}` : 'Price unavailable'}
+                          {primaryOption.quantityAvailable != null && (
+                            <span className="provider-availability">
+                              {' '}
+                              · {primaryOption.quantityAvailable} available
+                            </span>
+                          )}
+                        </p>
+                        {primaryOption.deliveryEta && (
+                          <span className="provider-eta">ETA {primaryOption.deliveryEta}</span>
                         )}
                       </div>
-                      <button type="button" onClick={() => onAddToCart(product, store)}>
-                        Add from {store.storeName}
+                      <button
+                        type="button"
+                        onClick={() => onAddToCart(product, primaryOption)}
+                        aria-label={`Add ${product.name} from ${primaryOption.storeName} to cart`}
+                      >
+                        Add to cart
                       </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </li>
-          ))}
+                    </div>
+                  </div>
+                )}
+
+                {otherOptions.length > 0 && (
+                  <div className="product-card__providers">
+                    <p className="price-summary">
+                      Compare {otherOptions.length} more offer{otherOptions.length === 1 ? '' : 's'}
+                    </p>
+                    <ul className="provider-options">
+                      {otherOptions.map((store) => {
+                        const formattedPrice = formatCurrencyValue(store.price)
+                        return (
+                          <li key={store.storeId} className="provider-option">
+                            <div className="provider-info">
+                              <div className="provider-option__header">
+                                <strong>{store.storeName}</strong>
+                              </div>
+                              <p className="provider-price">
+                                {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
+                                {store.quantityAvailable != null && (
+                                  <span className="provider-availability">
+                                    {' '}
+                                    · {store.quantityAvailable} available
+                                  </span>
+                                )}
+                              </p>
+                              {store.deliveryEta && (
+                                <span className="provider-eta">ETA {store.deliveryEta}</span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => onAddToCart(product, store)}
+                              aria-label={`Add ${product.name} from ${store.storeName} to cart`}
+                            >
+                              Add to cart
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
       </div>
@@ -452,47 +553,90 @@ const CartDrawer = ({ open, onClose, children }) => {
 const Cart = ({ items, onUpdateQuantity, onRemove, total }) => {
   if (!items.length) {
     return (
-      <div className="cart empty">
+      <div className="cart cart--empty">
         <p className="muted">Add items from the catalog to create an order.</p>
       </div>
     )
   }
 
+  const formattedTotal = formatCurrencyValue(total)
+
   return (
-    <div className="cart">
+    <div className="cart cart--panel">
+      <header className="cart__header">
+        <h2>Items in your cart</h2>
+        <span className="cart__count">
+          {items.length} item{items.length === 1 ? '' : 's'} · ${formattedTotal}
+        </span>
+      </header>
       <ul className="cart-list">
-        {items.map((item) => (
-          <li key={`${item.sku}-${item.storeId}`} className="cart-item">
-            <div className="cart-info">
-              <strong>{item.name}</strong>
-              <span className="muted">{item.storeName}</span>
-              <span className="muted">
-                ${item.price.toFixed(2)} · {item.quantityAvailable} in stock
-              </span>
-            </div>
-            <div className="cart-actions">
-              <label className="muted" htmlFor={`quantity-${item.sku}-${item.storeId}`}>
-                Qty
-              </label>
-              <input
-                id={`quantity-${item.sku}-${item.storeId}`}
-                type="number"
-                min="1"
-                max={item.quantityAvailable}
-                value={item.quantity}
-                onChange={(event) => onUpdateQuantity(item.sku, item.storeId, Number(event.target.value))}
-              />
-              <span className="price-subtotal">
-                ${(item.price * item.quantity).toFixed(2)}
-              </span>
-              <button type="button" className="link" onClick={() => onRemove(item.sku, item.storeId)}>
-                Remove
-              </button>
-            </div>
-          </li>
-        ))}
+        {items.map((item) => {
+          const formattedPrice = formatCurrencyValue(item.price)
+          const formattedSubtotal = formatCurrencyValue(item.price * item.quantity)
+
+          return (
+            <li key={`${item.sku}-${item.storeId}`} className="cart-item">
+              <div
+                className={`provider-option cart-provider-option ${getStoreAccentClass(item.storeId)}`}
+              >
+                <div className="provider-info cart-provider-info">
+                  <div className="provider-option__header cart-item__header">
+                    <strong>{item.name}</strong>
+                    <span className="cart-item__store-pill">{item.storeName}</span>
+                  </div>
+                  <p className="provider-price">
+                    {formattedPrice ? `$${formattedPrice}` : 'Price unavailable'}
+                    <span className="provider-availability">
+                      {' '}
+                      · {item.quantityAvailable} in stock
+                    </span>
+                  </p>
+                  <div className="cart-item__meta">
+                    <span className="badge badge--subtle">SKU {item.sku}</span>
+                    <span className="cart-item__quantity">Qty {item.quantity}</span>
+                    {formattedSubtotal ? (
+                      <span className="cart-item__subtotal">${formattedSubtotal} total</span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="cart-actions">
+                  <label
+                    className="cart-actions__label"
+                    htmlFor={`quantity-${item.sku}-${item.storeId}`}
+                  >
+                    Qty
+                  </label>
+                  <div className="cart-actions__controls">
+                    <input
+                      id={`quantity-${item.sku}-${item.storeId}`}
+                      type="number"
+                      min="1"
+                      max={item.quantityAvailable}
+                      value={item.quantity}
+                      onChange={(event) =>
+                        onUpdateQuantity(item.sku, item.storeId, Number(event.target.value))
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="link cart-actions__remove"
+                      onClick={() => onRemove(item.sku, item.storeId)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </li>
+          )
+        })}
       </ul>
-      <div className="cart-total">Total: ${total.toFixed(2)}</div>
+      <footer className="cart-footer">
+        <span className="cart-total-label">Order total</span>
+        <span className="cart-total-amount">
+          {formattedTotal ? `$${formattedTotal}` : '—'}
+        </span>
+      </footer>
     </div>
   )
 }

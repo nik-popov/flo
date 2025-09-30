@@ -75,15 +75,19 @@ describe('App', () => {
 
     render(<App />)
 
-  const locationInput = await screen.findByLabelText(/search by city, zip, or store name/i)
-  expect(locationInput).toHaveValue('10001')
+    const locationInput = await screen.findByLabelText(/search by city, zip, or store name/i)
+    expect(locationInput).toHaveValue('10001')
 
     expect(await screen.findByText(/Honeycrisp Apples/i)).toBeInTheDocument()
     expect(screen.getByText(/2 provider/i)).toBeInTheDocument()
-    const providerButton = screen.getByRole('button', { name: /add from sample store/i })
+    const providerButton = screen.getByRole('button', {
+      name: /add honeycrisp apples from sample store to cart/i,
+    })
     fireEvent.click(providerButton)
 
-    const secondProviderButton = screen.getByRole('button', { name: /add from uptown market/i })
+    const secondProviderButton = screen.getByRole('button', {
+      name: /add honeycrisp apples from uptown market to cart/i,
+    })
     fireEvent.click(secondProviderButton)
 
     const cartToggle = await screen.findByRole('button', { name: /cart \(2\) · \$5\.28/i })
@@ -95,9 +99,12 @@ describe('App', () => {
     const quantityInputs = await screen.findAllByRole('spinbutton', { name: /qty/i })
     expect(quantityInputs).toHaveLength(2)
 
-    expect(screen.getByText(/Total: \$5\.28/)).toBeInTheDocument()
-  expect(screen.getAllByText(/Sample Store/)).not.toHaveLength(0)
-  expect(screen.getAllByText(/Uptown Market/)).not.toHaveLength(0)
+  expect(screen.getByText(/Items in your cart/i)).toBeInTheDocument()
+  expect(screen.getByText(/2 items · \$5\.28/i)).toBeInTheDocument()
+  expect(screen.getByText(/Order total/i)).toBeInTheDocument()
+  expect(screen.getByText(/\$5\.28/, { selector: '.cart-total-amount' })).toBeInTheDocument()
+    expect(screen.getAllByText(/Sample Store/)).not.toHaveLength(0)
+    expect(screen.getAllByText(/Uptown Market/)).not.toHaveLength(0)
     expect(screen.getByText(/Cart includes items from Sample Store, Uptown Market./i)).toBeInTheDocument()
   })
 })
